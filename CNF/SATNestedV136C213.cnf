@@ -1,0 +1,355 @@
+c https://gitlab.mff.cuni.cz/hanakdr/sat-solver/-/blob/master/data/nested_8.cnf
+c Variables:
+c ----------------
+c _internal136: 136
+c _internal134: 134
+c _internal131: 131
+c _internal130: 130
+c _internal129: 129
+c _internal128: 128
+c _internal58: 58
+c _internal55: 55
+c _internal49: 49
+c _internal37: 37
+c _internal46: 46
+c _internal132: 132
+c _internal24: 24
+c _internal110: 110
+c _internal112: 112
+c _internal52: 52
+c _internal26: 26
+c _internal83: 83
+c _internal44: 44
+c x5: 14
+c _internal16: 16
+c _internal62: 62
+c _internal51: 51
+c _internal18: 18
+c _internal34: 34
+c _internal32: 32
+c x3: 4
+c _internal12: 12
+c _internal69: 69
+c _internal99: 99
+c _internal124: 124
+c _internal39: 39
+c _internal61: 61
+c _internal3: 3
+c _internal89: 89
+c _internal7: 7
+c _internal70: 70
+c _internal53: 53
+c _internal78: 78
+c _internal30: 30
+c x9: 5
+c _internal72: 72
+c _internal43: 43
+c _internal31: 31
+c _internal135: 135
+c x7: 8
+c _internal13: 13
+c _internal66: 66
+c _internal38: 38
+c _internal10: 10
+c _internal118: 118
+c _internal75: 75
+c _internal114: 114
+c _internal6: 6
+c _internal108: 108
+c _internal117: 117
+c _internal50: 50
+c _internal20: 20
+c x2: 23
+c _internal48: 48
+c x1: 1
+c _internal59: 59
+c _internal121: 121
+c _internal15: 15
+c _internal127: 127
+c _internal57: 57
+c _internal96: 96
+c _internal33: 33
+c _internal29: 29
+c _internal54: 54
+c x6: 17
+c _internal19: 19
+c _internal82: 82
+c _internal64: 64
+c _internal41: 41
+c _internal21: 21
+c _internal28: 28
+c _internal22: 22
+c _internal27: 27
+c _internal60: 60
+c _internal63: 63
+c _internal35: 35
+c _internal111: 111
+c _internal36: 36
+c _internal65: 65
+c _internal45: 45
+c _internal119: 119
+c _internal42: 42
+c _internal67: 67
+c _internal68: 68
+c _internal93: 93
+c _internal71: 71
+c _internal104: 104
+c _internal40: 40
+c _internal73: 73
+c _internal74: 74
+c _internal84: 84
+c _internal76: 76
+c _internal133: 133
+c _internal106: 106
+c _internal77: 77
+c _internal102: 102
+c _internal101: 101
+c _internal80: 80
+c _internal11: 11
+c _internal81: 81
+c _internal86: 86
+c _internal87: 87
+c _internal126: 126
+c _internal88: 88
+c _internal90: 90
+c _internal91: 91
+c _internal116: 116
+c _internal92: 92
+c _internal94: 94
+c _internal95: 95
+c _internal122: 122
+c x8: 97
+c _internal98: 98
+c _internal100: 100
+c _internal9: 9
+c _internal25: 25
+c _internal47: 47
+c _internal103: 103
+c _internal107: 107
+c _internal105: 105
+c x4: 2
+c _internal109: 109
+c _internal56: 56
+c _internal79: 79
+c _internal113: 113
+c _internal115: 115
+c _internal120: 120
+c _internal123: 123
+c _internal85: 85
+c _internal125: 125
+c ----------------
+c
+p cnf 136 213
+-3 1 0
+-3 -2 0
+-6 4 0
+-6 5 0
+-7 3 6 0
+-9 8 0
+-9 1 0
+-10 2 0
+-10 5 0
+-11 9 10 0
+-12 7 0
+-12 11 0
+-13 5 0
+-13 5 0
+-15 -2 0
+-15 -14 0
+-16 13 15 0
+-18 4 0
+-18 -17 0
+-19 -4 0
+-19 17 0
+-20 18 19 0
+-21 16 0
+-21 20 0
+-22 12 21 0
+-24 23 0
+-24 -23 0
+-25 -17 0
+-25 -1 0
+-26 24 25 0
+-27 -5 0
+-27 8 0
+-28 5 0
+-28 -17 0
+-29 27 28 0
+-30 26 0
+-30 29 0
+-31 23 0
+-31 2 0
+-32 -23 0
+-32 23 0
+-33 31 32 0
+-34 -14 0
+-34 -17 0
+-35 17 0
+-35 -2 0
+-36 34 35 0
+-37 33 0
+-37 36 0
+-38 30 37 0
+-39 22 0
+-39 38 0
+-40 -23 0
+-40 5 0
+-41 4 0
+-41 -8 0
+-42 40 41 0
+-43 -5 0
+-43 17 0
+-44 2 0
+-44 17 0
+-45 43 44 0
+-46 42 0
+-46 45 0
+-47 -14 0
+-47 2 0
+-48 -2 0
+-48 -8 0
+-49 47 48 0
+-50 -4 0
+-50 -4 0
+-51 5 0
+-51 -8 0
+-52 50 51 0
+-53 49 0
+-53 52 0
+-54 46 53 0
+-55 -17 0
+-55 4 0
+-56 -23 0
+-56 23 0
+-57 55 56 0
+-58 4 0
+-58 -23 0
+-59 -8 0
+-59 -5 0
+-60 58 59 0
+-61 57 0
+-61 60 0
+-62 -5 0
+-62 23 0
+-63 -17 0
+-63 14 0
+-64 62 63 0
+-65 -4 0
+-65 -1 0
+-66 -5 0
+-66 5 0
+-67 65 66 0
+-68 64 0
+-68 67 0
+-69 61 68 0
+-70 54 0
+-70 69 0
+-71 39 70 0
+-72 14 0
+-72 4 0
+-73 -4 0
+-73 17 0
+-74 72 73 0
+-75 -1 0
+-75 17 0
+-76 -2 0
+-76 2 0
+-77 75 76 0
+-78 74 0
+-78 77 0
+-79 23 0
+-79 -23 0
+-80 4 0
+-80 -5 0
+-81 79 80 0
+-82 14 0
+-82 -2 0
+-83 14 0
+-83 -17 0
+-84 82 83 0
+-85 81 0
+-85 84 0
+-86 78 85 0
+-87 -5 0
+-87 -23 0
+-88 2 0
+-88 17 0
+-89 87 88 0
+-90 5 0
+-90 2 0
+-91 23 0
+-91 2 0
+-92 90 91 0
+-93 89 0
+-93 92 0
+-94 1 0
+-94 -23 0
+-95 14 0
+-95 -2 0
+-96 94 95 0
+-98 97 0
+-98 97 0
+-99 -2 0
+-99 23 0
+-100 98 99 0
+-101 96 0
+-101 100 0
+-102 93 101 0
+-103 86 0
+-103 102 0
+-104 -17 0
+-104 -8 0
+-105 -1 0
+-105 1 0
+-106 104 105 0
+-107 -17 0
+-107 2 0
+-108 2 0
+-108 -4 0
+-109 107 108 0
+-110 106 0
+-110 109 0
+-111 -4 0
+-111 -97 0
+-112 23 0
+-112 -5 0
+-113 111 112 0
+-114 1 0
+-114 23 0
+-115 4 0
+-115 -97 0
+-116 114 115 0
+-117 113 0
+-117 116 0
+-118 110 117 0
+-119 -2 0
+-119 -1 0
+-120 8 0
+-120 8 0
+-121 119 120 0
+-122 -97 0
+-122 -8 0
+-123 -4 0
+-123 14 0
+-124 122 123 0
+-125 121 0
+-125 124 0
+-126 1 0
+-126 17 0
+-127 1 0
+-127 -5 0
+-128 126 127 0
+-129 1 0
+-129 4 0
+-130 23 0
+-130 8 0
+-131 129 130 0
+-132 128 0
+-132 131 0
+-133 125 132 0
+-134 118 0
+-134 133 0
+-135 103 134 0
+-136 71 0
+-136 135 0
+136 0
