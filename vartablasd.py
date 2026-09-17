@@ -234,7 +234,7 @@ class varpot:
             self.parent = dict()
             self.hyperpot = dict()
             self.w = 1
-            self.Q = 34
+            self.Q = 32
             self.A = -1
 
             
