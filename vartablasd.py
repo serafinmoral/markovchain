@@ -277,7 +277,9 @@ class varpot:
         def preset(self):
                 if self.A == len(self.svars):
                     return
-                for i in range(len(self.orden),self.A-1,-1):
+                K = len(self.orden)
+            
+                for i in range(K,self.A-1,-1):
                     v = self.orden.pop()
                     self.insertar(self.compiled[v])
                     if v in self.wait:
@@ -331,6 +333,7 @@ class varpot:
         def computefromSimple(self,infor):
             self.w  = 1
             self.svars = infor.listavar.copy()
+            self.A = len(self.svars)
 
             self.unit = infor.unit.copy()
                 
@@ -502,7 +505,7 @@ class varpot:
             i=0
             for v in reversed(self.orden):
                 print("Compile up", v, i)
-                if partial and self.A == len(self.orden)-i:
+                if partial and self.A == len(self.svars)-i:
                     break
                 i+=1
                 if self.parent[v]>-1:
