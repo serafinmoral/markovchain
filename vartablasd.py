@@ -187,9 +187,10 @@ def computevars(list):
     return vs
 
 
-def mejora(p,lista):
+def mejora(p,lista,Q):
 
     traba = lista.copy()
+    old = p.tabla.sum()
     if p in traba:
         traba.remove(p)
     vas = computevars(lista)
@@ -201,14 +202,28 @@ def mejora(p,lista):
             if v in q.getvars():
                 lp.append(q)
         q = nodoTabla([])
-        for h in lp:
+        tvars = set()
+        while lp:
+            h = lp.pop()
+            tvars.update(set(h.getvars()))
             traba.remove(h)
-            q = q.combina(h)
+            if len(tvars)<= Q:
+                q = q.combina(h)
+            elif v in q.getvars():
+                q = q.borra([v])
+                traba.append(q)
+                q = nodoTabla([])
+                tvars = set()
         if v in q.getvars():
             q = q.borra([v])
             traba.append(q)
     for q in traba:
         p.combina(q,inplace=True)
+
+    new = p.tabla.sum()
+    if new<old:
+        print("mejora", new,old,2**(len(p.getvars())))
+        
 
     
     
@@ -234,8 +249,16 @@ class varpot:
             self.parent = dict()
             self.hyperpot = dict()
             self.w = 1
-            self.Q = 32
-            self.A = -1
+            self.Q = 30
+            self.A = len(self.svars)
+            self.stack = []
+            self.cond = {}
+            self.contx = simpleClausulas()
+            self.condunit = []
+
+
+
+
 
             
         def reset(self):
@@ -249,7 +272,22 @@ class varpot:
             self.posvar = dict()
             self.compiled = dict()
             self.det = dict()
-            self.A = -1
+            self.A = len(self.svars)
+
+        def preset(self):
+                if self.A == len(self.svars):
+                    return
+                for i in range(len(self.orden),self.A-1,-1):
+                    v = self.orden.pop()
+                    self.insertar(self.compiled[v])
+                    if v in self.wait:
+                        for p in self.wait[v]:
+                            self.insertar(p)
+                        del self.wait[v]
+                    del self.compiled[v]
+                    del self.posvar[v]
+                    del self.det[v]
+            
           
         def anula(self):
             self.tablas = dict()
@@ -395,15 +433,17 @@ class varpot:
                 if v in self.wait:
                     for p in self.wait[v]:
                         self.hypertree[v].update(set(p.getvars()))
+                    self.hyperpot[v].extend(self.wait[v])
                         
             for v in self.orden:
-                if self.hypertree[v]:
-                    self.parent[v] = min([self.posvar[w] for w in self.hypertree[v]])
+                wv = set(self.hypertree[v]) - {v}
+                if wv:
+                    self.parent[v] = min([self.posvar[w] for w in wv])
                     self.hypertree[self.orden[self.parent[v]]].update(self.hypertree[v]-{v})
                 else:
                     self.parent[v] = -1
             for v in self.orden:
-                print(self.hypertree[v], len(self.hypertree[v]))
+                print(v, len(self.hypertree[v]))
 
 
         def compile(self,verb=True):
@@ -416,7 +456,7 @@ class varpot:
             
 
                                 
-                self.reset()
+                self.preset()
                                 
                 self.compiletotal()
                 print(len(self.orden)-self.A)
@@ -424,26 +464,46 @@ class varpot:
                 self.compileup()
                 self.mejoraup()
             
-
+               
+                self.preset()
                                 
-                self.reset()
+                self.compiletotal()
+                print(len(self.orden)-self.A)
+                self.computehyper()
+                self.compileup()
+                self.mejoraup()
+                           
+                self.preset()
+                                
+                self.compiletotal()
+                print(len(self.orden)-self.A)
+                self.computehyper()
+                self.compileup()
+                self.mejoraup()
+            
+                                
+                self.preset()
 
                 self.compiletotal()
                 print(len(self.orden)-self.A)
                 sleep(10)
 
-        def mejoraup(self):
-            for v in self.orden:
-                mejora(self.compiled[v],self.hyperpot[v])
+        def mejoraup(self, partial = True):
+            
+            for v in self.orden[self.A:]:
+                
+                mejora(self.compiled[v],self.hyperpot[v],self.Q)
                 if v in self.wait:
                     for p in self.wait[v]:
-                       mejora(p,self.hyperpot[v]) 
+                       mejora(p,self.hyperpot[v],self.Q) 
 
 
-        def compileup(self):
+        def compileup(self, partial = True):
             i=0
             for v in reversed(self.orden):
-                print(v, i)
+                print("Compile up", v, i)
+                if partial and self.A == len(self.orden)-i:
+                    break
                 i+=1
                 if self.parent[v]>-1:
                     varpa = self.orden[self.parent[v]]
@@ -459,11 +519,21 @@ class varpot:
                         for p in lw:
                             lista.remove(p)
                         q = nodoTabla([])
-                        for p in lw:
-                            q = q.combina(p)
+                        tvars = set()
+                        while lw:
+                            p = lw.pop()
+                            tvars.update(set(p.getvars()))
+                            if len(tvars)<=self.Q:
+                                q = q.combina(p)
+                            elif w in q.getvars():
+                                q = q.borra([w])
+                                lista.append(q)
+                                q = nodoTabla([])
+                                tvars = set()
                         if w in q.getvars():
                             q = q.borra([w])
                             lista.append(q)
+
                     self.hyperpot[v] = self.hyperpot[v] + lista
 
                     
@@ -522,7 +592,7 @@ class varpot:
                         self.compiled[var] = p
                         self.det[var] = False
                 else:
-                    ok = self.borrasidet(var,K)
+                    ok = self.borrasidet(var,len(remain))
                     if not ok:
                         ok = self.compilevar(var,nondet=True,wait = True)
                         
@@ -538,7 +608,7 @@ class varpot:
                         d = True
                         for q in list:
                             self.eliminar(q)                        
-                        print("borrando deterministic ",var," quedan ", K - len(self.orden) -1)
+                        print("borrando deterministic ",var," quedan ", K)
                         pot = p.minimizadep(var)
                         if len(list) == 1:
                             h = p.borra([var],inplace=False)
@@ -573,7 +643,18 @@ class varpot:
                     lista.append(p)
             return lista2
             
-
+        def minil(self,lista,var):
+            wl = lista.copy()
+            while wl:
+                l2 = self.moreinforma(wl)
+                q = nodoTabla([])
+                for p in wl:
+                    q = q.combina(p)
+                if var in q.getvars():
+                    h = q.borra([var],inplace = False)
+                    self.insertar(h)
+                wl = l2
+                
 
         def compilevar(self,var,nondet = False, wait = False, verb=True):
             list = self.get(var)
@@ -587,12 +668,14 @@ class varpot:
             elif size>self.Q and wait:
                 list2 = self.moreinforma(list)
                 if list2:
-                    if self.A == -1:
+                    if self.A == len(self.svars):
                         self.A = len(self.orden)-1
                     print("reservando variable ********************* ",var,  len(list2))
                     self.wait[var]= list2
                     for p in list2:
-                            self.eliminar(p)
+                        self.eliminar(p)
+
+                    self.minil(list2,var)
 
 
 
@@ -634,7 +717,7 @@ class varpot:
                     for p in list:
                             self.eliminar(p)
             elif wait:
-                    if self.A == -1:
+                    if self.A == len(self.svars):
                         self.A = len(self.orden)-1
                     print("reservando variable ------------------->", len(list))
                     self.wait[var]= list
