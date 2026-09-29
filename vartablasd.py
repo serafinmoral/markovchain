@@ -250,7 +250,7 @@ class varpot:
             self.hyperpot = dict()
             self.w = 1
             self.Q = 30
-            self.A = len(self.svars)
+            self.A = -1
             self.stack = []
             self.cond = {}
             self.contx = simpleClausulas()
@@ -275,12 +275,13 @@ class varpot:
             self.A = len(self.svars)
 
         def preset(self):
-                if self.A == len(self.svars):
+                if self.A == -1:
                     return
-                K = len(self.orden)
+
+                
             
-                for i in range(K,self.A-1,-1):
-                    v = self.orden.pop()
+                for i in range(self.A,len(self.orden)):
+                    v = self.orden[i]
                     self.insertar(self.compiled[v])
                     if v in self.wait:
                         for p in self.wait[v]:
@@ -289,6 +290,9 @@ class varpot:
                     del self.compiled[v]
                     del self.posvar[v]
                     del self.det[v]
+
+                del self.orden[self.A:]
+                self.A = -1
             
           
         def anula(self):
@@ -297,6 +301,7 @@ class varpot:
             self.contradict = True
             self.tablasize = dict()
             self.unit = set()
+            self.A = -1
  
 
         def getvars(self):
@@ -333,7 +338,7 @@ class varpot:
         def computefromSimple(self,infor):
             self.w  = 1
             self.svars = infor.listavar.copy()
-            self.A = len(self.svars)
+            self.A = -1
 
             self.unit = infor.unit.copy()
                 
@@ -445,9 +450,10 @@ class varpot:
                     self.hypertree[self.orden[self.parent[v]]].update(self.hypertree[v]-{v})
                 else:
                     self.parent[v] = -1
+            
             for v in self.orden:
-                print(v, len(self.hypertree[v]))
-
+                print(len(self.orden)-i, len(self.hypertree[v]),v)
+                i+=1
 
         def compile(self,verb=True):
             
@@ -492,8 +498,12 @@ class varpot:
                 sleep(10)
 
         def mejoraup(self, partial = True):
+            if partial:
+                K = self.A
+            else:
+                K= 0
             
-            for v in self.orden[self.A:]:
+            for v in self.orden[K:]:
                 
                 mejora(self.compiled[v],self.hyperpot[v],self.Q)
                 if v in self.wait:
@@ -502,12 +512,11 @@ class varpot:
 
 
         def compileup(self, partial = True):
-            i=0
-            for v in reversed(self.orden):
-                print("Compile up", v, i)
-                if partial and self.A == len(self.svars)-i:
-                    break
-                i+=1
+            
+            for i in range(len(self.orden)-1,self.A-1,-1):
+                v = self.orden[i]
+                
+                print("up ", i)
                 if self.parent[v]>-1:
                     varpa = self.orden[self.parent[v]]
                     lista = self.hyperpot[varpa].copy()
@@ -671,7 +680,7 @@ class varpot:
             elif size>self.Q and wait:
                 list2 = self.moreinforma(list)
                 if list2:
-                    if self.A == len(self.svars):
+                    if self.A == -1:
                         self.A = len(self.orden)-1
                     print("reservando variable ********************* ",var,  len(list2))
                     self.wait[var]= list2
@@ -683,6 +692,7 @@ class varpot:
 
 
             size = computesize(list)
+            print(size,list)
             if size<=self.Q and list:
                 p = nodoTabla([])
                 for q in list:
@@ -720,7 +730,7 @@ class varpot:
                     for p in list:
                             self.eliminar(p)
             elif wait:
-                    if self.A == len(self.svars):
+                    if self.A == -1:
                         self.A = len(self.orden)-1
                     print("reservando variable ------------------->", len(list))
                     self.wait[var]= list
