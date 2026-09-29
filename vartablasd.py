@@ -450,7 +450,7 @@ class varpot:
                     self.hypertree[self.orden[self.parent[v]]].update(self.hypertree[v]-{v})
                 else:
                     self.parent[v] = -1
-            
+            i=0
             for v in self.orden:
                 print(len(self.orden)-i, len(self.hypertree[v]),v)
                 i+=1
@@ -692,7 +692,7 @@ class varpot:
 
 
             size = computesize(list)
-            print(size,list)
+            print(size,len(list))
             if size<=self.Q and list:
                 p = nodoTabla([])
                 for q in list:
