@@ -731,11 +731,11 @@ class varpot:
                     self.orden.append(var)
                     self.posvar[var]= len(self.orden)-1
                     self.det[var] = False
-                    # old = len(p.getvars())
-                    # p = p.minimiza(h)
-                    # new = len(p.getvars())
-                    # if new<old:
-                    #     print("minimizo *********--------------->" , new, old)
+                    old = len(p.getvars())
+                    p = p.minimiza(h)
+                    new = len(p.getvars())
+                    if new<old:
+                        print("minimizo *********--------------->" , new, old)
                     self.compiled[var] = p
                     if verb:
                         print("borrando no determinismo")
