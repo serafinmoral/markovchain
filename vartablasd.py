@@ -222,7 +222,7 @@ def mejora(p,lista,Q):
 
     new = p.tabla.sum()
     if new<old:
-        print("mejora", new,old,2**(len(p.getvars())))
+        print("mejora", new,old,2**(len(p.getvars())), new/2**(len(p.getvars())),old/2**(len(p.getvars())))
         
 
     
@@ -274,22 +274,33 @@ class varpot:
             self.det = dict()
             self.A = len(self.svars)
 
-        def preset(self):
+        def preset(self,L=15):
                 if self.A == -1:
                     return
-
+                listi=[]
                 
-            
+                listd = []
                 for i in range(self.A,len(self.orden)):
                     v = self.orden[i]
-                    self.insertar(self.compiled[v])
+                    listi.append(self.compiled[v])
                     if v in self.wait:
                         for p in self.wait[v]:
-                            self.insertar(p)
+                            listi.append(p)
                         del self.wait[v]
+                    if self.det[v] and len(self.compiled[v].getvars())<=L:
+                        listd.append((v,self.compiled[v]))
                     del self.compiled[v]
                     del self.posvar[v]
                     del self.det[v]
+
+                for p in listi:
+                    for (v,q) in listd:
+                        if not(p==q) and set(q.getvars()) <= set(p.getvars()):
+                            p= p.combina(q).borra([v])
+                            print("reduzco ", len(p.getvars()))
+                    self.insertar(p)
+
+                
 
                 del self.orden[self.A:]
                 self.A = -1
@@ -451,51 +462,36 @@ class varpot:
                 else:
                     self.parent[v] = -1
             i=0
-            for v in self.orden:
-                print(len(self.orden)-i, len(self.hypertree[v]),v)
-                i+=1
+            # for v in self.orden:
+            #     print(len(self.orden)-i, len(self.hypertree[v]),v)
+            #     i+=1
 
         def compile(self,verb=True):
-            
-                self.compiletotal()
-                print(len(self.orden)-self.A)
-                self.computehyper()
-                self.compileup()
-                self.mejoraup()
-            
 
-                                
-                self.preset()
-                                
+                old = self.A
                 self.compiletotal()
                 print(len(self.orden)-self.A)
                 self.computehyper()
                 self.compileup()
                 self.mejoraup()
-            
+                new = self.A
+                
+
+                for i in range(30):     
+                    old = self.A         
+                    self.preset()
+                                
+                    self.compiletotal()
+                    print(len(self.orden)-self.A)
+                    self.computehyper()
+                    self.compileup()
+                    self.mejoraup()
+                    new = self.A
                
-                self.preset()
                                 
-                self.compiletotal()
-                print(len(self.orden)-self.A)
-                self.computehyper()
-                self.compileup()
-                self.mejoraup()
-                           
-                self.preset()
-                                
-                self.compiletotal()
-                print(len(self.orden)-self.A)
-                self.computehyper()
-                self.compileup()
-                self.mejoraup()
-            
-                                
-                self.preset()
-
-                self.compiletotal()
-                print(len(self.orden)-self.A)
-                sleep(10)
+                
+                
+                sleep(3)
 
         def mejoraup(self, partial = True):
             if partial:
@@ -516,7 +512,7 @@ class varpot:
             for i in range(len(self.orden)-1,self.A-1,-1):
                 v = self.orden[i]
                 
-                print("up ", i)
+                # print("up ", i)
                 if self.parent[v]>-1:
                     varpa = self.orden[self.parent[v]]
                     lista = self.hyperpot[varpa].copy()
@@ -601,6 +597,11 @@ class varpot:
                         print("determinismo " ,p.getvars(),pot.getvars())
 
                     else:
+                        old = len(p.getvars())
+                        p = p.minimiza(h)
+                        new = len(p.getvars())
+                        if new<old:
+                            print("minimizo *********--------------->" , new, old)
                         self.compiled[var] = p
                         self.det[var] = False
                 else:
@@ -645,6 +646,8 @@ class varpot:
             lista2 = lista.copy()
             del lista[:]
             total = set()
+            p = min(lista2, key = lambda x: x.tabla.sum())
+            lista.append(p)
             while lista2:
                 p = min(lista2, key = lambda x: len(total.union(set(x.getvars()))))
                 if len((total.union(set(p.getvars()))))>self.Q:
@@ -681,13 +684,13 @@ class varpot:
                 list2 = self.moreinforma(list)
                 if list2:
                     if self.A == -1:
-                        self.A = len(self.orden)-1
+                        self.A = len(self.orden)
                     print("reservando variable ********************* ",var,  len(list2))
                     self.wait[var]= list2
                     for p in list2:
                         self.eliminar(p)
 
-                    self.minil(list2,var)
+                    # self.minil(list2,var)
 
 
 
@@ -708,8 +711,9 @@ class varpot:
                     pot = p.minimizadep(var)
                     
                     self.compiled[var]=pot
+                    print(p.getvars(),pot.getvars())
                     if not pot == p:
-                        print(p.getvars(),pot.getvars())
+                        
                         u.combinasize(list,pot)
                         for q in list:
                             h = pot.combina(q,inplace=False).borra([var],inplace=False)
@@ -723,6 +727,11 @@ class varpot:
                     self.orden.append(var)
                     self.posvar[var]= len(self.orden)-1
                     self.det[var] = False
+                    old = len(p.getvars())
+                    p = p.minimiza(h)
+                    new = len(p.getvars())
+                    if new<old:
+                        print("minimizo *********--------------->" , new, old)
                     self.compiled[var] = p
                     if verb:
                         print("borrando no determinismo")
@@ -731,7 +740,7 @@ class varpot:
                             self.eliminar(p)
             elif wait:
                     if self.A == -1:
-                        self.A = len(self.orden)-1
+                        self.A = len(self.orden)
                     print("reservando variable ------------------->", len(list))
                     self.wait[var]= list
                     self.compiled[var] = nodoTabla([])
