@@ -530,7 +530,7 @@ class varpot:
                         q = nodoTabla([])
                         tvars = set()
                         while lw:
-                            h = min(lw, key = lambda x: len(tvars.union(set(x.getvars()))))
+                            p = min(lw, key = lambda x: len(tvars.union(set(x.getvars()))))
                             lw.remove(p)
                             tvars.update(set(p.getvars()))
                             if len(tvars)<=self.Q:
