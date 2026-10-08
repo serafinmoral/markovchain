@@ -205,7 +205,7 @@ def mejora(p,lista,Q):
         tvars = set()
         while lp:
             h = min(lp, key = lambda x: len(tvars.union(set(x.getvars()))))
-            lp.remove(p)
+            lp.remove(h)
             tvars.update(set(h.getvars()))
             traba.remove(h)
             if len(tvars)<= Q:
