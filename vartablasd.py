@@ -647,6 +647,7 @@ class varpot:
             del lista[:]
             total = set()
             p = min(lista2, key = lambda x: x.tabla.sum())
+            lista2.remove(p)
             lista.append(p)
             while lista2:
                 p = min(lista2, key = lambda x: len(total.union(set(x.getvars()))))
