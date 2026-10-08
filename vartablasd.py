@@ -204,7 +204,8 @@ def mejora(p,lista,Q):
         q = nodoTabla([])
         tvars = set()
         while lp:
-            h = lp.pop()
+            h = min(lp, key = lambda x: len(tvars.union(set(x.getvars()))))
+            lp.remove(p)
             tvars.update(set(h.getvars()))
             traba.remove(h)
             if len(tvars)<= Q:
@@ -529,7 +530,8 @@ class varpot:
                         q = nodoTabla([])
                         tvars = set()
                         while lw:
-                            p = lw.pop()
+                            h = min(lw, key = lambda x: len(tvars.union(set(x.getvars()))))
+                            lw.remove(p)
                             tvars.update(set(p.getvars()))
                             if len(tvars)<=self.Q:
                                 q = q.combina(p)
@@ -649,6 +651,7 @@ class varpot:
             p = min(lista2, key = lambda x: x.tabla.sum())
             lista2.remove(p)
             lista.append(p)
+            total.update(set(p.getvars()))
             while lista2:
                 p = min(lista2, key = lambda x: len(total.union(set(x.getvars()))))
                 if len((total.union(set(p.getvars()))))>self.Q:
@@ -728,11 +731,11 @@ class varpot:
                     self.orden.append(var)
                     self.posvar[var]= len(self.orden)-1
                     self.det[var] = False
-                    old = len(p.getvars())
-                    p = p.minimiza(h)
-                    new = len(p.getvars())
-                    if new<old:
-                        print("minimizo *********--------------->" , new, old)
+                    # old = len(p.getvars())
+                    # p = p.minimiza(h)
+                    # new = len(p.getvars())
+                    # if new<old:
+                    #     print("minimizo *********--------------->" , new, old)
                     self.compiled[var] = p
                     if verb:
                         print("borrando no determinismo")
