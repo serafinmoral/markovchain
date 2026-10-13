@@ -219,13 +219,20 @@ class nodoTabla:
         n = len(lista)
         t = (2,)*n
         self.tabla = np.ones( dtype = boolean, shape = t)
+        self.context = set()
+        self.det = []
+        self.mindet = []
+
     
     def copia(self):
         result = nodoTabla(self.listavar.copy())
         if isinstance(self.tabla,boolean) or isinstance(self.tabla,int):
-            result.tabla = self.tablas
+            result.tabla = self.tabla
         else:
             result.tabla = self.tabla.copy()
+        result.context = self.context.copy()
+        result.det = self.det.copy()
+        result.mindet = self.mindet.copy()
         return result
     
     def getvars(self):
@@ -246,6 +253,7 @@ class nodoTabla:
             if not p.trivial():
                 res.append(p)
         return res
+
 
 
     def descomponev(self,v):
@@ -296,13 +304,17 @@ class nodoTabla:
         else:
             res = nodoTabla(self.listavar.copy())
             res.tabla = nuevatabla
+            res.det = self.det.copy()
+            res.mindet = self.mindet.copy()
+            res.context = self.context.copy()
 
         return res
 
 
     def equivalente(self,p):
        
-       
+        if not self.context == p.context:
+            return False
         if self.suma(p.neg()).trivial() and p.suma(self.neg()).trivial():
             return True
         else:
@@ -310,7 +322,8 @@ class nodoTabla:
 
 
     def implicadopor(self,p):
-        if self.suma(p.neg()).trivial():
+
+        if self.suma(p.neg()).trivial() and p.context <= self.context:
             return True
         else:
             return False
@@ -351,8 +364,16 @@ class nodoTabla:
             
 
             
-
+        
         result = self if inplace else self.copia()
+        if self.context.intersection(map(lambda x: -x, op.context)):
+            return result
+
+        result.context = self.context.union(op.context)
+        result.det = result.det + [x for x in op.det if x not in result.det]
+        result.mindet = []
+
+        
 
         if isinstance(op.tabla,boolean):
             if op.tabla:
@@ -565,21 +586,25 @@ class nodoTabla:
         t = t0.combina(t1, inplace=False)
 
         if t.contradict():
+            self.mindet = []
+            self.det.append(v)
             return True
         else:
-
             return False
 
     def contenida(self,listanodos):
         return u.contenida(self,listanodos) 
 
     def minimizadep(self,v, seg = None):
+        if v in self.mindet:
+            return self
         if not seg:
             seg = set()
         vars = set(self.listavar) - seg
         vars.remove(v)
 
         if not vars:
+            self.mindet.append(v)
             return self
         
         
@@ -587,9 +612,10 @@ class nodoTabla:
 
         np = self.borra([nv])
 
-
+        
 
         if not np.trivial() and np.checkdetermi(v):
+            
             return np.minimizadep(v, seg.copy())
         else:
             seg.add(nv)
@@ -645,6 +671,8 @@ class nodoTabla:
 
     def suma(self,op,inplace = False, des= False):
         result = self if inplace else self.copia()
+        result.det = self.det.copy()
+        result.mindet = self.mindet.copy()
         if isinstance(op.tabla,boolean):
             if op:
                 return result
@@ -761,6 +789,10 @@ class nodoTabla:
         
         values = filter(lambda x: abs(x) in  self.listavar, val)
         phi = self if inplace else nodoTabla([])
+
+
+        phi.mindet = []
+        phi.det = []
 
         
         values = [
@@ -914,6 +946,10 @@ class nodoTabla:
         for var in variables:
             if var not in phi.listavar:
                 raise ValueError(f"{var} no está en la lista.")
+        phi.det = []
+        phi.mindet = []
+        if not inplace:
+            phi.context = self.context.copy()
 
         var_indexes = [phi.listavar.index(var) for var in variables]
 
@@ -927,22 +963,7 @@ class nodoTabla:
         
            
 
-    def borrab(self,variables, inplace=False):
 
-        phi = self if inplace else self.copia()   
-        for var in variables:
-            if var not in phi.listavar:
-                raise ValueError(f"{var} no está en la lista.")
-
-        var_indexes = [phi.listavar.index(var) for var in variables]
-
-        index_to_keep = sorted(set(range(len(self.listavar))) - set(var_indexes))
-        phi.listavar = [phi.listavar[index] for index in index_to_keep]
-
-        phi.tabla = np.sum(phi.tabla, axis=tuple(var_indexes))
-
-        if not inplace:
-            return phi
 
     def contradict(self):
         return not np.amax(self.tabla)

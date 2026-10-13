@@ -12,6 +12,50 @@ from tablaClausulas import *
 from itertools import combinations,product
 from utils import *
 
+def borralista(lista,delv,Q):
+    for w in delv:
+        lw = []
+        for p in lista:
+            if w in p.getvars():
+                lw.append(p)
+        for p in lw:
+            lista.remove(p)
+        deter = False
+        for p in lw:
+            if w in p.det:
+                borradet(w,lw,p,lista,Q)
+                deter = True
+        if not deter:
+            q = nodoTabla([])
+            tvars = set()
+            while lw:
+                p = min(lw, key = lambda x: len(tvars.union(set(x.getvars()))))
+                lw.remove(p)
+                tvars.update(set(p.getvars()))
+                if len(tvars)<=Q:
+                    q = q.combina(p)
+                elif w in q.getvars():
+                    q = q.borra([w])
+                    lista.append(q)
+                    q = nodoTabla([])
+                    tvars = set()
+            if w in q.getvars():
+                q = q.borra([w])
+                lista.append(q)
+
+
+def borradet(w,lw,p,lista,Q):
+    lw.remove(p)
+    if not lw:
+        lista.append(p.borra([w],inplace=False))
+    else:
+        for q in lw:
+            if len(set(p.getvars()).union(set(q.getvars())))<= Q:
+                h = p.combina(q,inplace=False).borra([w],inplace=False)
+                lista.append(h)
+            else:
+                lista.append(q.borra([w],inplace=False))
+
 def recompute(w,list,config,remain):
     w.clear()
     k = set(remain) - {abs(v) for v in config}   
@@ -196,28 +240,8 @@ def mejora(p,lista,Q):
     vas = computevars(lista)
     vap = set(p.getvars())
     vdel = vas-vap
-    for v in vdel:
-        lp = []
-        for q in traba:
-            if v in q.getvars():
-                lp.append(q)
-        q = nodoTabla([])
-        tvars = set()
-        while lp:
-            h = min(lp, key = lambda x: len(tvars.union(set(x.getvars()))))
-            lp.remove(h)
-            tvars.update(set(h.getvars()))
-            traba.remove(h)
-            if len(tvars)<= Q:
-                q = q.combina(h)
-            elif v in q.getvars():
-                q = q.borra([v])
-                traba.append(q)
-                q = nodoTabla([])
-                tvars = set()
-        if v in q.getvars():
-            q = q.borra([v])
-            traba.append(q)
+    borralista(traba,vdel,Q)
+    
     for q in traba:
         p.combina(q,inplace=True)
 
@@ -254,7 +278,6 @@ class varpot:
             self.A = -1
             self.stack = []
             self.cond = {}
-            self.contx = simpleClausulas()
             self.condunit = []
 
 
@@ -520,30 +543,8 @@ class varpot:
                     lvp = self.hypertree[varpa]
                     lvt = self.hypertree[v]
                     delv = lvp - lvt
-                    for w in delv:
-                        lw = []
-                        for p in lista:
-                            if w in p.getvars():
-                                lw.append(p)
-                        for p in lw:
-                            lista.remove(p)
-                        q = nodoTabla([])
-                        tvars = set()
-                        while lw:
-                            p = min(lw, key = lambda x: len(tvars.union(set(x.getvars()))))
-                            lw.remove(p)
-                            tvars.update(set(p.getvars()))
-                            if len(tvars)<=self.Q:
-                                q = q.combina(p)
-                            elif w in q.getvars():
-                                q = q.borra([w])
-                                lista.append(q)
-                                q = nodoTabla([])
-                                tvars = set()
-                        if w in q.getvars():
-                            q = q.borra([w])
-                            lista.append(q)
-
+                    borralista(lista,delv,self.Q)
+                    
                     self.hyperpot[v] = self.hyperpot[v] + lista
 
                     
@@ -592,7 +593,7 @@ class varpot:
                     self.posvar[var]= len(self.orden)-1
                     h = p.borra([var],inplace=False)    
                     self.insertar(h)
-                    if p.checkdetermi(var):
+                    if var in p.det or p.checkdetermi(var):
                         pot = p.minimizadep(var)
                         self.det[var] = True
                         self.compiled[var]  = pot
@@ -618,7 +619,7 @@ class varpot:
             d = False
             for p in list:
                 
-                if p.checkdetermi(var):
+                if var in p.det or p.checkdetermi(var):
                     if self.tadref(p,list)<= self.Q:
                         d = True
                         for q in list:
@@ -648,7 +649,7 @@ class varpot:
             lista2 = lista.copy()
             del lista[:]
             total = set()
-            p = min(lista2, key = lambda x: x.tabla.sum())
+            p = min(lista2, key = lambda x: x.tabla.sum()/2**len(x.getvars()))
             lista2.remove(p)
             lista.append(p)
             total.update(set(p.getvars()))
@@ -701,11 +702,14 @@ class varpot:
             size = computesize(list)
             print(size,len(list))
             if size<=self.Q and list:
-                p = nodoTabla([])
-                for q in list:
-                    p=p.combina(q)
+                if len(list)==1:
+                    p = list[0]
+                else:
+                    p = nodoTabla([])
+                    for q in list:
+                        p=p.combina(q)
                 
-                if p.checkdetermi(var):
+                if var in p.det or p.checkdetermi(var):
                     
                     for h in list:
                             self.eliminar(h)
