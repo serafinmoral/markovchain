@@ -274,7 +274,7 @@ class varpot:
             self.parent = dict()
             self.hyperpot = dict()
             self.w = 1
-            self.Q = 30
+            self.Q = 26
             self.A = -1
             self.stack = []
             self.cond = {}
@@ -492,17 +492,20 @@ class varpot:
 
         def compile(self,verb=True):
 
-                old = self.A
+
+                self.Q = 10
                 self.compiletotal()
                 print(len(self.orden)-self.A)
                 self.computehyper()
                 self.compileup()
                 self.mejoraup()
-                new = self.A
+                
                 
 
-                for i in range(30):     
-                    old = self.A         
+                for i in range(50):     
+                    print(">>>>>>>>>>>>>>>Q= ",self.Q)
+                    if self.Q <30:
+                        self.Q += 0.5     
                     self.preset()
                                 
                     self.compiletotal()
@@ -510,7 +513,7 @@ class varpot:
                     self.computehyper()
                     self.compileup()
                     self.mejoraup()
-                    new = self.A
+                    
                
                                 
                 
@@ -620,19 +623,21 @@ class varpot:
             for p in list:
                 
                 if var in p.det or p.checkdetermi(var):
-                    if self.tadref(p,list)<= self.Q:
-                        d = True
-                        for q in list:
-                            self.eliminar(q)                        
+                    d = True
+                    for q in list:
+                        self.eliminar(q)
+                    pot = p.minimizadep(var)
+
+                    if self.tadref(pot,list)<= self.Q:
+                                                
                         print("borrando deterministic ",var," quedan ", K)
-                        pot = p.minimizadep(var)
                         if len(list) == 1:
                             h = p.borra([var],inplace=False)
                             self.insertar(h)
                         else:
                             if pot==p and len(list) >1:
                                 list.remove(p)
-                            u.combinasize(list,pot)
+                            u.combinasize(list,pot,self.Q)
                             for q in list:
                                 h = pot.combina(q,inplace=False).borra([var],inplace=False)
                                 self.insertar(h)
@@ -641,6 +646,30 @@ class varpot:
                         self.det[var]=True
                         self.compiled[var] = pot
                         break
+                    else:
+                        if pot==p and len(list) >1:
+                            list.remove(p)
+                        u.combinasize(list,pot,self.Q)
+                        refs = set(pot.getvars())
+                        for q in list:
+                            if len(refs.union(set(q.getvars()))) <= self.Q:
+                                h = pot.combina(q,inplace=False).borra([var],inplace=False)
+                                self.insertar(h)
+                            else:
+                                print("******* reservando un potencial determinista ")
+                                if not var in self.wait:
+                                    self.wait[var] = [q]
+                                else:
+                                    self.wait[var].append(q)
+                                if self.A == -1:
+                                    self.A = len(self.orden)
+                        self.orden.append(var)
+                        self.posvar[var]= len(self.orden)-1
+                        self.det[var]=True
+                        self.compiled[var] = pot
+                        break
+
+
             return d
 
 
@@ -678,6 +707,7 @@ class varpot:
 
         def compilevar(self,var,nondet = False, wait = False, verb=True):
             list = self.get(var)
+            list3 = list.copy()
         
 
 
@@ -712,7 +742,7 @@ class varpot:
                 if var in p.det or p.checkdetermi(var):
                     
                     for h in list:
-                            self.eliminar(h)
+                        self.eliminar(h)
                     self.orden.append(var)
                     self.posvar[var]= len(self.orden)-1
                     self.det[var]=True
@@ -722,7 +752,7 @@ class varpot:
                     print(p.getvars(),pot.getvars())
                     if not pot == p:
                         
-                        u.combinasize(list,pot)
+                        u.combinasize(list,pot,self.Q)
                         for q in list:
                             h = pot.combina(q,inplace=False).borra([var],inplace=False)
                             self.insertar(h)
@@ -1579,11 +1609,32 @@ class varpot:
         def tadm(self,v):
             mat = 0
         
+
+            d = False
+            if v in self.tablas:
+                for q in self.tablas[v]:
+                    if v in q.det:
+                        piv = q
+                        d = True
+                        break
+            
+            if d:
+                sset = set(piv.getvars())
+                for q in self.tablas[v]:
+                    mat += 2**(len(sset.union(set(q.getvars()))))   - 2**(len(q.getvars()))
+                return mat
+
+
             sset = set()
+
+
+
             if v in self.tablas:
                 for q in self.tablas[v]:
                     sset.update(set(q.getvars()))
                     mat += - 2**(len(q.getvars()))
+
+
             
 
             return (mat + 2**(len(sset)-2))
