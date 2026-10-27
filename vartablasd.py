@@ -886,7 +886,7 @@ class varpot:
 
                     ok = self.borrasidet(var,len(remain), verb=verb)
                     if not ok:
-                        ok = self.compilevar(var,nondet=True,test=test,wait = True)
+                        ok = self.compilevar(var,nondet=True,test=test,wait = True, verb=verb)
 
       
 
