@@ -809,6 +809,16 @@ class nodoTabla:
         else:
             return False
 
+    def computedet(self,v):
+        
+        t0 = self.reduce([v])
+        t1 = self.reduce([-v])
+        
+               
+        
+        return  t0.combina(t1, inplace=False)
+
+
     def contenida(self,listanodos):
         return u.contenida(self,listanodos) 
 

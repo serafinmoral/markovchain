@@ -230,8 +230,16 @@ def combinasize(lista,pivote,Q):
             
             i+=1
 
+def improve(lista):
+    n = len(lista)
+    for i in range(n):
+        for j in range(i+1,n):
+            lista[i] = lista[i].mejora(lista[j])
+            lista[j] = lista[j].mejora(lista[i])
+                
 
-def combinaincluidas(lista, K=0):
+
+def combinaincluidas(lista, K=0, Q=25):
     
     lista.sort(key = lambda x : - len(x.getvars()) )
 
@@ -242,7 +250,7 @@ def combinaincluidas(lista, K=0):
         j = i+1
         while j < len(lista):
             # print("lista, i, j", len(lista), i, j)
-            if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K and len(set(lista[j].getvars()).union(set(lista[i].getvars())))<=25:
+            if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K and len(set(lista[j].getvars()).union(set(lista[i].getvars())))<=Q:
                 p = lista[i]
                 q = lista[j]
                 t = p.combina(q)
@@ -282,6 +290,7 @@ def agrupatam(lista):
                 
                 t = p.combina(q)
                 if t.contradict():
+                    lista = [t]
                     print("contradicion ")
                     return 
                 

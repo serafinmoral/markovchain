@@ -689,7 +689,12 @@ class varpot:
                for p in self.tablas[var]:
                    self.eliminar(p)
                    self.insertar(p)
-           for i in range(self.posvar[var]-1,self.A-1,-1):
+           if var in self.posvar:
+               K= self.posvar[var]-1
+           else:
+               K = len(self.orden)-1
+           for i in range(K,self.A-1,-1):
+                
                 va = self.orden[i]
                 if self.second:
                     for i in range(len(self.compiled[va])):
@@ -746,7 +751,7 @@ class varpot:
                 
                 
 
-                for i in range(2):
+                for i in range(20):
                     old = self.A     
                     print(">>>>>>>>>>>>>>>Q= ",self.Q)
                       
@@ -764,9 +769,9 @@ class varpot:
                     if self.A == -1:
                         break
 
-                if not self.A == -1:
-                    self.tosecond()
-                    self.compilesecond()
+                # if not self.A == -1:
+                #     self.tosecond()
+                #     self.compilesecond()
 
 
 
@@ -830,7 +835,7 @@ class varpot:
                         if not d:
                             ok = self.compilevar(self,var)       
 
-        def compiletotal(self,wait = True, verb=True):
+        def compiletotal(self,wait = True, test= True,verb=True):
             remain = self.svars - set(self.orden)  
             remain = remain- set(map(abs,self.unit))     
 
@@ -839,7 +844,8 @@ class varpot:
                 var = self.siguientep(remain)
                 remain.remove(var)
                 list = self.get(var)
-                print("analizando variable ",var , "quedan ", len(remain))
+                if verb:
+                    print("analizando variable ",var , "quedan ", len(remain))
 
                 
 
@@ -853,7 +859,8 @@ class varpot:
                     self.det[var] = False
 
                 elif len(list)==1:
-                    print("borrando variable one potential",var)
+                    if verb:
+                        print("borrando variable one potential",var)
                     p = list[0]
                     self.eliminar(p)
                     self.orden.append(var)
@@ -864,26 +871,38 @@ class varpot:
                         pot = p.minimizadep(var)
                         self.det[var] = True
                         self.compiled[var]  = pot
-                        print("determinismo " ,p.getvars(),pot.getvars())
+                        if verb:
+                            print("determinismo " ,p.getvars(),pot.getvars())
 
                     else:
                         old = len(p.getvars())
                         p = p.minimiza(h)
                         new = len(p.getvars())
-                        if new<old:
+                        if new<old and verb:
                             print("minimizo *********--------------->" , new, old)
                         self.compiled[var] = p
                         self.det[var] = False
                 else:
-                    ok = self.borrasidet(var,len(remain))
+
+                    ok = self.borrasidet(var,len(remain), verb=verb)
                     if not ok:
-                        ok = self.compilevar(var,nondet=True,wait = True)
-                        
+                        ok = self.compilevar(var,nondet=True,test=test,wait = True)
+
+      
+
+
                           
 
-        def borrasidet(self,var,K):
+        def borrasidet(self,var,K, verb=True):
             list = self.get(var)
+            for q in list:
+                self.eliminar(q)
             d = False
+            u.improve(list)
+            u.agrupatam(list)
+            for q in list:
+                self.insertar(q)
+            list = self.get(var)
             for p in list:
                 
                 if var in p.det or p.checkdetermi(var):
@@ -894,7 +913,8 @@ class varpot:
 
                     if self.tadref(pot,list)<= self.Q:
                                                 
-                        print("borrando deterministic ",var," quedan ", K)
+                        if verb:
+                            print("borrando deterministic ",var," quedan ", K)
                         if len(list) == 1:
                             h = p.borra([var],inplace=False)
                             self.insertar(h)
@@ -920,7 +940,8 @@ class varpot:
                                 h = pot.combina(q,inplace=False).borra([var],inplace=False)
                                 self.insertar(h)
                             else:
-                                print("******* reservando un potencial determinista ")
+                                if verb:
+                                    print("******* reservando un potencial determinista ")
                                 if not var in self.wait:
                                     self.wait[var] = [q]
                                 else:
@@ -932,7 +953,7 @@ class varpot:
                         self.det[var]=True
                         self.compiled[var] = pot
                         break
-
+                
 
             return d
 
@@ -969,25 +990,27 @@ class varpot:
                 wl = l2
                 
 
-        def compilevar(self,var,nondet = False, wait = False, verb=True):
+        def compilevar(self,var,nondet = False, wait = False, test = True, verb=True):
             list = self.get(var)
-            list3 = list.copy()
-        
-
+            
+            
+            
 
             size = computesize(list)
             su = False
             if size>self.Q and not wait:
                 return False
-            elif size>self.Q and wait:
+            for p in list:
+                self.eliminar(p)
+            if size>self.Q and wait:
+                
                 list2 = self.moreinforma(list)
                 if list2:
                     if self.A == -1:
                         self.A = len(self.orden)
                     print("reservando variable ********************* ",var,  len(list2))
                     self.wait[var]= list2
-                    for p in list2:
-                        self.eliminar(p)
+                    
 
                     # self.minil(list2,var)
 
@@ -1004,26 +1027,32 @@ class varpot:
                         p=p.combina(q)
                 
                 if var in p.det or p.checkdetermi(var):
-                    
-                    for h in list:
-                        self.eliminar(h)
-                    self.orden.append(var)
-                    self.posvar[var]= len(self.orden)-1
-                    self.det[var]=True
-                    pot = p.minimizadep(var)
-                    
-                    self.compiled[var]=pot
-                    print(p.getvars(),pot.getvars())
-                    if not pot == p:
-                        u.combinasize(list,pot,self.Q)
-                        for q in list:
-                            h = pot.combina(q,inplace=False).borra([var],inplace=False)
-                            self.insertar(h)
-                    else:
-                        h = p.borra([var],inplace = False)
-                        self.insertar(h)
-                 
+                    self.borradetl(var,p,list,verb=verb)
                 elif nondet:
+
+                    
+                    if test:
+                        if verb:
+                            print("Comprobando ")
+                        r = p.computedet(var)
+                        if verb:
+                            print("No determinismo ",r.tabla.sum()/2**(len(r.getvars())))
+                        nuevo = self.copia()
+                        nuevo.insertar(r)
+                        nuevo.orden.append(var)
+                        nuevo.posvar[var]= len(self.orden)-1
+                        nuevo.det[var] = False
+                        nuevo.Q = max(self.Q,25)
+                        nuevo.compiletotal(verb=False, test=False)
+                        if nuevo.contradict:
+                            if verb:
+                                print("SII exito ")
+                            p = p.combina(r.neg())
+                            self.borradetl(var,p,list,verb=verb)
+                            return
+                        elif verb:
+                            print("NOO exito ")
+
                     h = p.borra([var],inplace = False)
                     self.orden.append(var)
                     self.posvar[var]= len(self.orden)-1
@@ -1031,25 +1060,24 @@ class varpot:
                     old = len(p.getvars())
                     p = p.minimiza(h)
                     new = len(p.getvars())
-                    if new<old:
+                    if new<old and verb:
                         print("minimizo *********--------------->" , new, old)
                     self.compiled[var] = p
                     if verb:
                         print("borrando no determinismo")
                     self.insertar(h)
-                    for p in list:
-                            self.eliminar(p)
+                    
             elif wait:
                     if self.A == -1:
                         self.A = len(self.orden)
-                    print("reservando variable ------------------->", len(list))
+                    if verb:
+                        print("reservando variable ------------------->", len(list))
                     self.wait[var]= list
                     self.compiled[var] = nodoTabla([])
                     self.orden.append(var)
                     self.posvar[var]= len(self.orden)-1
                     self.det[var] = False
-                    for p in list:
-                            self.eliminar(p)
+                    
 
 
             return su
@@ -1058,8 +1086,27 @@ class varpot:
 
 
                     
+        def borradetl(self,var,p,list, verb=True):
+                               
+                                
+            self.orden.append(var)
+            self.posvar[var]= len(self.orden)-1
+            self.det[var]=True
+            pot = p.minimizadep(var)
+            
+            self.compiled[var]=pot
+            if verb:
+                print(p.getvars(),pot.getvars())
+            if not pot == p:
+                u.combinasize(list,pot,self.Q)
+                for q in list:
+                    h = pot.combina(q,inplace=False).borra([var],inplace=False)
+                    self.insertar(h)
+            else:
+                h = p.borra([var],inplace = False)
+                self.insertar(h)
                 
-                    
+
 
         def recompileupdet(self,K=6,verb=True):
             n = len(self.orden)
@@ -1132,12 +1179,14 @@ class varpot:
 
         def getInitial(self):
             config = self.unit.copy()
+
+
         
             
             for v in self.orden[::-1]:
+
                 p = self.compiled[v]
                 q = p.reduce(config)
-
                 if v in self.wait:
                     for p in self.wait[v]:
                         q = q.combina(p.reduce(config))
@@ -1395,16 +1444,14 @@ class varpot:
             if self.contradict:
                 res.contradict = True
                 return 
-            for v in self.tabla:
-                res.tabla[v] = self.tabla[v].copy()
-            for v in self.tablach:
-                res.tablach[v] = self.tablach[v].copy()
+            for v in self.tablas:
+                res.tablas[v] = self.tablas[v].copy()
+ 
             for v in self.tablam:
                 res.tablam[v] = self.tablam[v].copy()
 
-            for n in self.tablasize:
-                res.tablasize[v] = self.tablasize[v].copy()
-
+         
+            res.svars = self.svars.copy()
         
             for v in self.prob:
                 res.prob[v] = self.prob[v].copy()
@@ -1416,6 +1463,7 @@ class varpot:
             res.w = self.w
 
             res.Q = self.Q
+            res.A = self.A
 
             for v in self.compiled:
                 res.compiled = self.compiled.copy()
