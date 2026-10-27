@@ -29,14 +29,92 @@ def tableunit(x):
 class mix:
     def __init__(self):
         self.lt = []
+        self.unit = set()
         
         
     def anula(self):
         self.lt = []
+        self.unit = set()
+
+
+    def simplressubsumed(self,lp):
+        if isinstance(lp,nodoTabla): 
+            return False
+        dif1 = lp.unit - self.unit
+        dif2 = self.unit-lp.unit
+        if len(dif1) == 1:
+            vd = dif1.pop()
+            if -vd in self.unit:     
+                for q in lp.lt:
+                    for v in dif2:
+                        if v in q.getvars():
+                            q = q.reduce(-v)
+                    ok = False
+                    for r in self.lt:
+                        if r.implicadopor(q):
+                            ok=True
+                            break
+                    if not ok:
+                        return False
+                self.unit.remove(-vd)
+                return True
+            else:
+                laux = []
+                for p in self.lt:
+                    if vd in p.getvars():
+                        p = p.reduce(vd)
+                        laux.append(p)
+                
+                for q in lp.lt:
+                    for v in dif2:
+                        if v in q.getvars():
+                            q = q.reduce(-v)
+                    ok = False
+                    for r in laux:
+                        if r.implicadopor(q):
+                            ok=True
+                            break
+                    if not ok:
+                        return False
+                self.lt = laux
+                return True
+        return False
+
+
+        
+
+    def implicadopor(self,lp):
+        if isinstance(lp,nodoTabla): 
+            for v in self.unit:
+                if abs(v) in lp.getvars():
+                   lp = lp.reduce(-v)
+            for p in self.lt:
+                if p.implicadopor(lp):
+                    return True
+            return False
+        res = False
+        if lp.unit <= self.unit:
+            for q in lp.lt:
+                for v in self.unit - lp.unit:
+                    if abs(v) in q.getvars():
+                        q = q.reduce(-v)
+                ok = False
+                for r in self.lt:
+                    if r.implicadopor(q):
+                        ok=True
+                        break
+                if not ok:
+                    return False
+            return True
+        else:
+            return False
+
+
+
         
 
     def getvars(self):
-        res = set()
+        res = set(self.unit)
         
         for x in self.lt:
             res.update(x.getvars())
@@ -49,6 +127,10 @@ class mix:
         
         for p in self.lt:
             res = res.suma(p)
+
+        for v in self.unit:
+            p = tableunit(v)
+            res = res.suma(p)
         
         return res
             
@@ -56,6 +138,7 @@ class mix:
     def mtrivial(self):
         p = nodoTabla([])
         self.lt = [p]
+        self.unit = set()
 
     def simplify(self,p):
         res = mix()
@@ -87,10 +170,23 @@ class mix:
 
         return res  
 
-                
-
+    def borra(self,lista,Q=30):
+        result = self
+        sl1 = set(lista)
+        sl2 = {abs(v) for v in self.unit}
+        if sl1.intersection(sl2):
+            result.mtrivial()
+            return result
+        result.unit = self.unit.copy()
+        for p in self.lt:
+            p = p.borra(lista,inplace=False)
+            result.insert(p)
+        
+        return result
     
-    def insert(self,p,Q=30):
+    
+    
+    def insert(self,p, group = False, Q=30):
      
         if self.trivial():
             return
@@ -101,12 +197,17 @@ class mix:
            
             for x in p.lt:
                 self.insert(x)
+            return
             
         
         
         if isinstance(p,nodoTabla):
 
-         
+            p = p.reduce([-v for v in self.unit])
+
+            
+
+
             if not self.lt:
                 if not p.contradict():
                     if p.trivial():
@@ -118,13 +219,35 @@ class mix:
             svar = set(p.getvars())
             q = min(self.lt , key = lambda x: len(set(x.getvars()).union(svar)) )
 
-            if len(set(q.getvars()).union(svar)) <= Q:
+            if len(set(q.getvars()).union(svar)) <= Q and group:
                 self.lt.remove(q)
                 p = p.suma(q)
+            elif len(set(q.getvars()).union(svar)) == len(svar):
+                self.lt.remove(q)
+                p = p.suma(q)
+
+            if len(p.getvars()) ==1: 
+                if p.trivial():
+                    self.mtrivial()
+                if not p.tabla[0] and p.tabla[1]:
+                    if -p.getvars()[0] in self.unit:
+                        self.mtrivial()
+                        return
+                    self.unit.add(p.getvars()[0])
+                    self.regenerate(p.getvars()[0])
+                elif p.tabla[0] and not p.tabla[1]:
+                    if p.getvars()[0] in self.unit:
+                        self.mtrivial()
+                        return
+                    self.unit.add(-p.getvars()[0])
+                    self.regenerate(-p.getvars()[0])
+                return
+
 
             if p.trivial():
                 self.mtrivial()
                 return
+            
             if p.contradict():
                 return
 
@@ -136,25 +259,92 @@ class mix:
 
             
 
+    def regenerate(self,v):
+        traba = self.lt.copy()
+        self.lt = []
+        ins = []
 
+        for p in traba:
+            if abs(v) not in p.getvars():
+                self.lt.append(p)
+            else:
+                ins.append(p.reduce(-v))
+
+        for p in ins:
+            self.insert(p)
 
                 
                 
     def resolution(self,p,var):
-            r1 = mix()
-            r2 = mix()
-            p1 = p.reduce(var)
-            p2 = p.reduce(-var)
-            a1 = self.reduce(var)
-            a2 = self.reduce(-var)
-            r1.insert(p1)
-            r1.insert(a2)
-            r2.insert(p2)
-            r2.insert(a1)
-        
-            return (r1,r2)
+            
+            if isinstance(p,mix):
+                r1 = mix()
+                r2 = mix()
+                p1 = p.reduce(var)
+                p2 = p.reduce(-var)
+                a1 = self.reduce(var)
+                a2 = self.reduce(-var)
+                sa1 = set(map(lambda x: -x, a1.unit))
+                sa2 = set(map(lambda x: -x, a2.unit))
+                if sa2.intersection(p1.unit):
+                    r1.mtrivial()
+                else:
+                    r1.unit = a2.unit.union(p1.unit)
+                if sa1.intersection(p2.unit):
+                    r2.mtrivial()
+                else:
+                    r2.unit = a1.unit.union(p2.unit)
+                  
+
+
+                r1.insert(p1)
+                r1.insert(a2)
+                r2.insert(p2)
+                r2.insert(a1)
+            
+                return (r1,r2)
+
+            if isinstance(p,nodoTabla):
+                r = mix()
+                r.insert(p)
+                return self.resolution(r,var)
+
+            
                
-                        
+    def combina(self,p):
+        result = mix()
+        if isinstance(p,nodoTabla):
+            for q in self.lt:
+                result.insert(q.combina(p,inplace= False))
+            return result
+        if isinstance(p,mix):
+            if self.unit.intersection({-v for v in p.unit}):
+                result.mtrivial()
+                return result
+            l1 = []
+            l2 = []
+            for q in self.lt: 
+                for v in p.unit:
+                    if abs(v) in q.getvars():
+                        q= q.reduce(-v)
+                l1.append(q)
+            
+            for r in p.lt:
+                for v in self.unit:
+                    if abs(v) in r.getvars():
+                        r = r.reduce(-v)
+                l2.append(r)
+            for q in self.lt:
+                  for r in p.lp:
+                      h = q.combina(r)
+                      result.insert(h)
+
+            result.unit = self.unit.union(p.unit)
+            return result
+              
+
+
+                  
                     
 
     def remove(self,p):
@@ -168,17 +358,38 @@ class mix:
             
     
     def reduce(self,v):
-        var = abs(v)
         res = mix()
-        
+        if isinstance(v,set):
+            if self.unit.intersection(v):
+                res.mtrivial()
+                return res
+            vn = set(map(lambda x: -x,v))
+            res.unit = self.unit - vn
+            for p in self.lt:
+                h = p.reduce(v)
+                res.insert(h)
+                            
 
+            return res
+        
+        if v in self.unit:
+            res.mtrivial()
+            return res
+        if -v in self.unit:
+            res.lt = self.lt.copy()
+            res.unit = self.unit - {-v}
+            return res
+        var = abs(v)
+        
+        
+        res.unit = self.unit.copy()
         
         for p in self.lt:
                 if var in p.getvars():
-                    h = p.reduce( [v])
-                    res.insert(h)
+                    h = p.reduce(v)
+                    res.lt.append(h)
                 else:
-                    res.insert(p)
+                    res.lt.append(p)
         return res
 
         
@@ -190,6 +401,7 @@ class mix:
 
 
     def trivial(self):
+
         
         for x in self.lt:
             if x.trivial():
@@ -198,7 +410,8 @@ class mix:
 
     def contradict(self):
         
-        
+        if self.unit:
+            return False
         for p in self.lt:
             if not p.contradict():
                 return False
@@ -219,7 +432,6 @@ class nodoTabla:
         n = len(lista)
         t = (2,)*n
         self.tabla = np.ones( dtype = boolean, shape = t)
-        self.context = set()
         self.det = []
         self.mindet = []
 
@@ -230,7 +442,6 @@ class nodoTabla:
             result.tabla = self.tabla
         else:
             result.tabla = self.tabla.copy()
-        result.context = self.context.copy()
         result.det = self.det.copy()
         result.mindet = self.mindet.copy()
         return result
@@ -306,7 +517,6 @@ class nodoTabla:
             res.tabla = nuevatabla
             res.det = self.det.copy()
             res.mindet = self.mindet.copy()
-            res.context = self.context.copy()
 
         return res
 
@@ -323,7 +533,16 @@ class nodoTabla:
 
     def implicadopor(self,p):
 
-        if self.suma(p.neg()).trivial() and p.context <= self.context:
+        if isinstance(p,mix) and p.unit:
+            return False
+        elif isinstance(p,mix):
+            for h in p.lt:
+                if not self.implicadopor(h):
+                    return False
+            return True
+        
+
+        if self.suma(p.neg()).trivial():
             return True
         else:
             return False
@@ -366,10 +585,8 @@ class nodoTabla:
             
         
         result = self if inplace else self.copia()
-        if self.context.intersection(map(lambda x: -x, op.context)):
-            return result
+        
 
-        result.context = self.context.union(op.context)
         result.det = result.det + [x for x in op.det if x not in result.det]
         result.mindet = []
 
@@ -948,8 +1165,7 @@ class nodoTabla:
                 raise ValueError(f"{var} no está en la lista.")
         phi.det = []
         phi.mindet = []
-        if not inplace:
-            phi.context = self.context.copy()
+        
 
         var_indexes = [phi.listavar.index(var) for var in variables]
 
@@ -1024,9 +1240,21 @@ class nodoTabla:
         result.update(h.calculaunit())
 
         return result
+
+    def univar(self):
+        if not len(self.getvars()) ==1:
+            return None
+        if not self.tabla[0] and self.tabla[1]:
+            return self.gervars()[0]
+        if self.tabla[0] and not self.tabla[1]:
+            return -self.gervars()[0]
+        return None
+        
           
     
     def resolution(self,p,var):
+        
+        if isinstance(p,nodoTabla):
             r1 = mix()
             r2 = mix()
             p1 = p.reduce(var)
@@ -1036,9 +1264,12 @@ class nodoTabla:
             r1.insert(p1)
             r1.insert(a2)
             r2.insert(p2)
-            r2.insert(a1)
-        
+            r2.insert(a1) 
             return (r1,r2)
+            
+        if isinstance(p,mix):
+            return p.resolution(self)
+        
                
                         
 

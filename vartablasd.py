@@ -292,7 +292,7 @@ class varpot:
             self.Q = 26
             self.A = -1
             self.tocont = False
-            self.varcontext = []
+            self.second = False
 
             
 
@@ -353,6 +353,8 @@ class varpot:
             self.contradict = True
             self.tablasize = dict()
             self.unit = set()
+            self.compiled = dict()
+            self.wait = dict()
             self.A = -1
  
 
@@ -418,7 +420,176 @@ class varpot:
                   
             return
 
-           
+        def insertvar(self,v):
+            if v in self.unit:
+                return
+            if -v in self.unit:
+                self.anula()
+                return
+            self.unit.add(v)
+            self.regenerate(v)
+            
+            
+
+
+        def insertarsecond(self,p, R=15):
+            if self.contradict:
+                return []
+            p = p.reduce(self.unit)
+
+            if p.trivial():
+                print("trivial ")
+                return []
+
+
+            if p.contradict():
+                self.anula()
+                return
+
+            tvars = p.getvars()
+
+            
+            po = min(self.posvar[v] for v in tvars)
+            
+            w = self.orden[po]
+
+            print(len(self.orden)- po,len(self.compiled[w]))
+
+         
+
+            if isinstance(p,mix) and len(p.getvars())<= R:
+                self.insertarsecond(p.toTable())
+                return
+
+            if isinstance(p,nodoTabla) and len(p.getvars())==1:
+                v = p.univar()
+                self.insertvar(v)
+                return
+
+            if isinstance(p,nodoTabla) and self.det[w]:
+                print("inserto tabla determinista ")
+                q = self.compiled[w][0]
+                old = len(q.getvars())
+                vd = set(p.getvars())-set(q.getvars())
+                h = p.borra(list(vd),inplace = False)
+                self.compiled[w][0] = self.compiled[w][0].combina(h)
+                self.compiled[w][0] = self.compiled[w][0].minimizadep(w)
+                new = len(self.compiled[w][0].getvars())
+                if new<old:
+                    self.simplifydet(self.compiled[w][0],w)
+                    print("reduzco determinismo ", old-new)
+                
+                if len(set(p.getvars()).union(q.getvars()))<= self.Q:
+                    h = p.combina(q)
+                    h = h.borra([w], inplace=False)
+                    self.insertarsecond(h)
+                    return
+                else:
+                    (h1,h2) = p.resolution(q,w)
+                    self.insertarsecond(h1)
+                    self.insertarsecond(h2)
+                    return
+
+            if isinstance(p,nodoTabla) and not self.det[w]:
+                print("inserto tabla no determinista ")
+                included = False
+                for i in range(len(self.compiled[w])):
+                    q = self.compiled[w][i]
+                    if len(set(p.getvars()).union(set(q.getvars())))<= self.Q:
+                        if not included:
+                            r = q.combina(p)
+                            included = True
+                            self.compiled[i] = r
+                        else:
+                            q = q.combina(p,inplace=False)
+                        h = r.borra([w],inplace=False)
+                        self.insertarsecond(h)
+                        
+
+                    else:
+                        (h1,h2) = p.resolution(q,w)
+                        self.insertarsecond(h1)
+                        self.insertarsecond(h2)
+                        
+                if not included:
+                    self.compiled[w].append(p)
+                else:
+                    d = r.checkdetermi(w)
+                    if d:
+                        print("nuevo determinismo ", len(r.getvars()))
+                        h = r.minimizadep(w)
+                        self.simplifydet(h,w)
+                        self.compiled[w] = [h]
+                        self.det[w] = True
+                return
+
+            
+            if isinstance(p,mix) and self.det[w]:
+                print("inserto mix determinista")
+                q = self.compiled[w][0]
+                (h1,h2) = p.resolution(q,w)
+                self.insertarsecond(h1)
+                self.insertarsecond(h2)
+                return
+
+            if isinstance(p,mix) and not self.det[w]:
+                print("inserto mix no determinista")
+                # for q in self.compiled[w]:
+                #     if p.implicadopor(q):
+                #         return
+
+                # borr = []
+                # for q in self.compiled[w]:
+                #     if q.implicadopor(p):
+                #         borr.append(q)
+                # for q in borr:
+                #         self.compiled[w].remove(q)
+
+                # for q in self.compiled[w]:
+                #     if isinstance(q,mix):
+                #         ok=p.simplressubsumed(q)
+                #         if ok:
+                #             print("subsumed")
+                #             self.insertarsecond(p)
+                #             return
+                #         ok = q.simplressubsumed(p)
+                #         if ok:
+                #             print("second subsumed ")
+                #             self.compiled[w].remove(q)
+                #             self.insertarsecond(q)
+                
+
+                for q in self.compiled[w]:
+                    print(len(self.compiled[w]))
+                    (h1,h2) = q.resolution(p,w)
+                    print("inserto primero ")
+                    self.insertarsecond(h1)
+                    print("inserto segundo")
+                    self.insertarsecond(h2)
+
+                self.compiled[w].append(p)
+                return
+
+
+
+                
+
+
+
+
+            
+
+                
+            
+
+
+
+
+
+
+                        
+
+            
 
         def insertar(self,p):
             
@@ -471,20 +642,76 @@ class varpot:
                  
             return
 
-        def regenerate(self,v):
+        def simplifydet(self,q,var):
+            if not self.second:
+                return
+            if var in self.tablas[var]:
+                for p in self.tablas[var]:
+                    if set(q.getvars()) <= set(p.getvars()):
+                        self.eliminar(p)
+                        self.insertar(p.combina(q).borra([var],inplace=False))
+                n = self.posvar(var)
+                for i in range(n-1,self.A-1,-1):
+                    va = self.orden[i]
+                    if not self.second:
+                        p = self.compiled[va]
+                        
+                        if isinstance(q,nodoTabla) and set(q.getvars()) <= set(p.getvars()):
+                            self.compiled[va] = p.combina(q).borra([var],inplace=False)
+                    else:
+                        aux = []
+                        for q in self.compiled[va]:
+                            if isinstance(q,nodoTabla) and set(q.getvars()) <= set(p.getvars()):
+                               q = p.combina(q).borra([var],inplace=False)
+                            aux.append(q)
+                        self.compiled[va]= aux
+
+
+                    if va in self.wait:
+                        aux = []
+                        for q in self.compiled[va]:
+                            if  isinstance(q,nodoTabla) and  set(q.getvars()) <= set(p.getvars()):
+                                q = p.combina(q).borra([var],inplace=False)
+                            aux.append(q)
+                            self.wait[va]= aux
+            
+                self.det[var] = True
+                if self.second:
+                    self.compiled[var] = [q]
+                else:
+                    self.compiled[var] = q
+                
+
+
+        def regenerate(self,v, second = False):
            var = abs(v)
            if var in self.tablas[var]:
                for p in self.tablas[var]:
                    self.eliminar(p)
                    self.insertar(p)
-           for va in self.compiled:
-               if var in self.compiled[va].getvars():
-                   self.compiled[va] = self.compiled[va].reduce({v})
-           self.compiled[var] = tableunit(v)
-           for va in self.wait:
-               for i in range(len(self.wait)):
-                    if var in self.wait[va][i].getvars():
-                        self.wait[va][i]  = self.wait[va][i].reduce({v})
+           for i in range(self.posvar[var]-1,self.A-1,-1):
+                va = self.orden[i]
+                if self.second:
+                    for i in range(len(self.compiled[va])):
+                     if var in self.compiled[va][i].getvars():
+                            self.compiled[va][i]  = self.compiled[va][i].reduce([v])
+                else:
+                    if var in self.compiled[va]:
+                        self.compiled[va] =  self.compiled[va].reduce([v])
+
+                        
+                if va in self.wait:
+                    for i in range(len(self.wait[va])):
+                            if var in self.wait[va][i].getvars():
+                                self.wait[va][i]  = self.wait[va][i].reduce([v])
+
+           self.det[var] = True
+           if self.second:
+               
+                self.compiled[var] = [tableunit(v)]
+           else:
+               self.second[var] = tableunit(v)
+
 
         def computehyper(self):
             for v in self.orden:
@@ -519,7 +746,7 @@ class varpot:
                 
                 
 
-                for i in range(150):
+                for i in range(2):
                     old = self.A     
                     print(">>>>>>>>>>>>>>>Q= ",self.Q)
                       
@@ -536,11 +763,26 @@ class varpot:
                         self.Q += 1
                     if self.A == -1:
                         break
-               
+
+                if not self.A == -1:
+                    self.tosecond()
+                    self.compilesecond()
+
+
+
+
                                 
                 
-                
-                sleep(3)
+        def compilesecond(self):
+            for v in self.orden[:self.A-1:-1]:
+                print(v,self.posvar[v])
+                if v in self.wait:
+                    print("wait" , len(self.wait[v]))
+                    for q in self.wait[v]:
+                        print("inserto ")
+                        self.insertarsecond(q)
+                    del self.wait[v]      
+            
 
         def mejoraup(self, partial = True):
             if partial:
@@ -1349,7 +1591,10 @@ class varpot:
              
             return res
             
-             
+        def tosecond(self):
+            self.second = True
+            for v in self.compiled:
+                self.compiled[v] = [self.compiled[v]]    
  
 
         def insertarclau(self,cl):
