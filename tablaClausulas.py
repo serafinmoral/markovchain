@@ -1268,7 +1268,7 @@ class nodoTabla:
             return (r1,r2)
             
         if isinstance(p,mix):
-            return p.resolution(self)
+            return p.resolution(self,var)
         
                
                         
