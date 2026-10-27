@@ -685,7 +685,7 @@ class varpot:
 
         def regenerate(self,v, second = False):
            var = abs(v)
-           if var in self.tablas[var]:
+           if var in self.tablas:
                for p in self.tablas[var]:
                    self.eliminar(p)
                    self.insertar(p)
@@ -701,7 +701,7 @@ class varpot:
                      if var in self.compiled[va][i].getvars():
                             self.compiled[va][i]  = self.compiled[va][i].reduce([v])
                 else:
-                    if var in self.compiled[va]:
+                    if var in self.compiled[va].getvars():
                         self.compiled[va] =  self.compiled[va].reduce([v])
 
                         
@@ -1008,7 +1008,8 @@ class varpot:
                 if list2:
                     if self.A == -1:
                         self.A = len(self.orden)
-                    print("reservando variable ********************* ",var,  len(list2))
+                    if verb:
+                        print("reservando variable ********************* ",var,  len(list2))
                     self.wait[var]= list2
                     
 
@@ -1017,7 +1018,8 @@ class varpot:
 
 
             size = computesize(list)
-            print(size,len(list))
+            if verb:
+                print(size,len(list))
             if size<=self.Q and list:
                 if len(list)==1:
                     p = list[0]
@@ -1031,7 +1033,7 @@ class varpot:
                 elif nondet:
 
                     
-                    if test:
+                    if test and self.A == -1:
                         if verb:
                             print("Comprobando ")
                         r = p.computedet(var)
