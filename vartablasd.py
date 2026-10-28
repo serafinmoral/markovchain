@@ -715,7 +715,7 @@ class varpot:
                
                 self.compiled[var] = [tableunit(v)]
            else:
-               self.second[var] = tableunit(v)
+               self.compiled[var] = tableunit(v)
 
 
         def computehyper(self):
