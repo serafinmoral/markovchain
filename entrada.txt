@@ -1,1 +1,1 @@
-CNF/aes_32_1_keyfind_2.cnf
+CNF/aes_32_2_keyfind_1.cnf
