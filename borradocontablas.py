@@ -6,6 +6,7 @@ Created on Wed Mar  6 13:30:14 2019
 """ 
 
 from time import *
+
 from SimpleClausulas import *
 
 from vartablasd import *
@@ -155,7 +156,7 @@ def borradocontablas(archivolee,  archivogenera="salida.csv",Q=30):
                                     # main(prob)  #EDM 
                 bolSAT = main(prob) #EDM 
                 t5 = time()
-          
+                writer.write("tiemp " + str(t5-t1)+"\n")
               
                                 # ttotal += t5-t1
                 # print(Q)

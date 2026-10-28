@@ -315,13 +315,17 @@ class varpot:
             self.det = dict()
             self.A = len(self.svars)
 
-        def preset(self,L=15):
+        def preset(self,L=25,total = False):
                 if self.A == -1:
                     return
                 listi=[]
                 
                 listd = []
-                for i in range(self.A,len(self.orden)):
+                if total:
+                    K = self.A
+                else:
+                    K = 0
+                for i in range(K,len(self.orden)):
                     v = self.orden[i]
                     listi.append(self.compiled[v])
                     if v in self.wait:
@@ -343,7 +347,7 @@ class varpot:
 
                 
 
-                del self.orden[self.A:]
+                del self.orden[K:]
                 self.A = -1
             
           
@@ -701,7 +705,8 @@ class varpot:
                      if var in self.compiled[va][i].getvars():
                             self.compiled[va][i]  = self.compiled[va][i].reduce([v])
                 else:
-                    if var in self.compiled[va].getvars():
+
+                    if va in self.compiled and var in self.compiled[va].getvars():
                         self.compiled[va] =  self.compiled[va].reduce([v])
 
                         
