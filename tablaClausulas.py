@@ -18,8 +18,8 @@ import math
 import random
 
 # Configura 'cuda' si tienes GPU disponible y trabajas con tablas grandes, o 'cpu'
-# DEFAULT_DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-DEFAULT_DEVICE = torch.device('cpu')
+DEFAULT_DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# DEFAULT_DEVICE = torch.device('cpu')
 
 def tableunit(x, device=DEFAULT_DEVICE):
     res = nodoTabla([abs(x)], device=device)
@@ -353,8 +353,9 @@ class mix:
 class nodoTabla:
     def __init__(self, lista, device=DEFAULT_DEVICE):
         self.listavar = list(lista)
-        self.device = device
         n = len(self.listavar)
+
+        self.device =torch.device('cpu' if n > 25 else DEFAULT_DEVICE)
         t = (2,) * n
         self.tabla = torch.ones(size=t, dtype=torch.bool, device=self.device)
         self.det = []
