@@ -4,26 +4,30 @@ Created on 31 Enero 2022
 
 @author: Serafin
 """
+# -*- coding: utf-8 -*-
+"""
+Adaptado a PyTorch a partir del original de Serafin (31 Enero 2022)
+"""
 
-from xmlrpc.client import boolean
 import utils as u
-
 import networkx as nx
-import numpy as np
+import torch
 from SimpleClausulas import * 
 from time import *
 import math
 import random
 
+# Configura 'cuda' si tienes GPU disponible y trabajas con tablas grandes, o 'cpu'
+DEFAULT_DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def tableunit(x):
-    res = nodoTabla([abs(x)])
-    if x>0:
+
+def tableunit(x, device=DEFAULT_DEVICE):
+    res = nodoTabla([abs(x)], device=device)
+    if x > 0:
         res.tabla[0] = False
     else:
         res.tabla[1] = False    
     return res
-
 
 
 class mix:
@@ -31,17 +35,15 @@ class mix:
         self.lt = []
         self.unit = set()
         
-        
     def anula(self):
         self.lt = []
         self.unit = set()
 
-
-    def simplressubsumed(self,lp):
-        if isinstance(lp,nodoTabla): 
+    def simplressubsumed(self, lp):
+        if isinstance(lp, nodoTabla): 
             return False
         dif1 = lp.unit - self.unit
-        dif2 = self.unit-lp.unit
+        dif2 = self.unit - lp.unit
         if len(dif1) == 1:
             vd = dif1.pop()
             if -vd in self.unit:     
@@ -52,7 +54,7 @@ class mix:
                     ok = False
                     for r in self.lt:
                         if r.implicadopor(q):
-                            ok=True
+                            ok = True
                             break
                     if not ok:
                         return False
@@ -72,7 +74,7 @@ class mix:
                     ok = False
                     for r in laux:
                         if r.implicadopor(q):
-                            ok=True
+                            ok = True
                             break
                     if not ok:
                         return False
@@ -80,19 +82,15 @@ class mix:
                 return True
         return False
 
-
-        
-
-    def implicadopor(self,lp):
-        if isinstance(lp,nodoTabla): 
+    def implicadopor(self, lp):
+        if isinstance(lp, nodoTabla): 
             for v in self.unit:
                 if abs(v) in lp.getvars():
-                   lp = lp.reduce(-v)
+                    lp = lp.reduce(-v)
             for p in self.lt:
                 if p.implicadopor(lp):
                     return True
             return False
-        res = False
         if lp.unit <= self.unit:
             for q in lp.lt:
                 for v in self.unit - lp.unit:
@@ -101,7 +99,7 @@ class mix:
                 ok = False
                 for r in self.lt:
                     if r.implicadopor(q):
-                        ok=True
+                        ok = True
                         break
                 if not ok:
                     return False
@@ -109,68 +107,53 @@ class mix:
         else:
             return False
 
-
-
-        
-
     def getvars(self):
         res = set(self.unit)
-        
         for x in self.lt:
             res.update(x.getvars())
-        
         return res
     
     def toTable(self):
         res = nodoTabla([])
-        res.tabla = False
+        res.tabla = torch.tensor(False, dtype=torch.bool, device=res.device)
         
         for p in self.lt:
             res = res.suma(p)
 
         for v in self.unit:
-            p = tableunit(v)
+            p = tableunit(v, device=res.device)
             res = res.suma(p)
         
         return res
-            
 
     def mtrivial(self):
         p = nodoTabla([])
         self.lt = [p]
         self.unit = set()
 
-    def simplify(self,p):
+    def simplify(self, p):
         res = mix()
-
-        if isinstance(p,nodoTabla):
+        if isinstance(p, nodoTabla):
             for q in self.lt:
                 if set(p.getvars()) <= set(q.getvars()):
                     q = q.combina(p)
                     res.insert(q)
                 else:
                     res.insert(q)
-
-               
-
             return res
         
-        
-    def simplifyd(self,p,var): 
+    def simplifyd(self, p, var): 
         res = mix()
         for q in self.lt:
-                if set(p.getvars()) <= set(q.getvars()):
-                    q = q.combina(p)
-                    q = q.borra([var])
-                    res.insert(q)
-                else:
-                    res.insert(q)
-
-                
-
+            if set(p.getvars()) <= set(q.getvars()):
+                q = q.combina(p)
+                q = q.borra([var])
+                res.insert(q)
+            else:
+                res.insert(q)
         return res  
 
-    def borra(self,lista,Q=30):
+    def borra(self, lista, Q=30):
         result = self
         sl1 = set(lista)
         sl2 = {abs(v) for v in self.unit}
@@ -179,34 +162,21 @@ class mix:
             return result
         result.unit = self.unit.copy()
         for p in self.lt:
-            p = p.borra(lista,inplace=False)
+            p = p.borra(lista, inplace=False)
             result.insert(p)
-        
         return result
     
-    
-    
-    def insert(self,p, group = False, Q=30):
-     
+    def insert(self, p, group=False, Q=30):
         if self.trivial():
             return
         
-        
-        
-        if isinstance(p,mix):
-           
+        if isinstance(p, mix):
             for x in p.lt:
                 self.insert(x)
             return
-            
         
-        
-        if isinstance(p,nodoTabla):
-
+        if isinstance(p, nodoTabla):
             p = p.reduce([-v for v in self.unit])
-
-            
-
 
             if not self.lt:
                 if not p.contradict():
@@ -217,7 +187,7 @@ class mix:
                 return
 
             svar = set(p.getvars())
-            q = min(self.lt , key = lambda x: len(set(x.getvars()).union(svar)) )
+            q = min(self.lt, key=lambda x: len(set(x.getvars()).union(svar)))
 
             if len(set(q.getvars()).union(svar)) <= Q and group:
                 self.lt.remove(q)
@@ -226,23 +196,22 @@ class mix:
                 self.lt.remove(q)
                 p = p.suma(q)
 
-            if len(p.getvars()) ==1: 
+            if len(p.getvars()) == 1: 
                 if p.trivial():
                     self.mtrivial()
-                if not p.tabla[0] and p.tabla[1]:
+                if not bool(p.tabla[0]) and bool(p.tabla[1]):
                     if -p.getvars()[0] in self.unit:
                         self.mtrivial()
                         return
                     self.unit.add(p.getvars()[0])
                     self.regenerate(p.getvars()[0])
-                elif p.tabla[0] and not p.tabla[1]:
+                elif bool(p.tabla[0]) and not bool(p.tabla[1]):
                     if p.getvars()[0] in self.unit:
                         self.mtrivial()
                         return
                     self.unit.add(-p.getvars()[0])
                     self.regenerate(-p.getvars()[0])
                 return
-
 
             if p.trivial():
                 self.mtrivial()
@@ -252,14 +221,9 @@ class mix:
                 return
 
             self.lt.append(p)
-
             return 
 
-        
-
-            
-
-    def regenerate(self,v):
+    def regenerate(self, v):
         traba = self.lt.copy()
         self.lt = []
         ins = []
@@ -273,51 +237,44 @@ class mix:
         for p in ins:
             self.insert(p)
 
-                
-                
-    def resolution(self,p,var):
-            
-            if isinstance(p,mix):
-                r1 = mix()
-                r2 = mix()
-                p1 = p.reduce(var)
-                p2 = p.reduce(-var)
-                a1 = self.reduce(var)
-                a2 = self.reduce(-var)
-                sa1 = set(map(lambda x: -x, a1.unit))
-                sa2 = set(map(lambda x: -x, a2.unit))
-                if sa2.intersection(p1.unit):
-                    r1.mtrivial()
-                else:
-                    r1.unit = a2.unit.union(p1.unit)
-                if sa1.intersection(p2.unit):
-                    r2.mtrivial()
-                else:
-                    r2.unit = a1.unit.union(p2.unit)
-                  
+    def resolution(self, p, var):
+        if isinstance(p, mix):
+            r1 = mix()
+            r2 = mix()
+            p1 = p.reduce(var)
+            p2 = p.reduce(-var)
+            a1 = self.reduce(var)
+            a2 = self.reduce(-var)
+            sa1 = set(map(lambda x: -x, a1.unit))
+            sa2 = set(map(lambda x: -x, a2.unit))
+            if sa2.intersection(p1.unit):
+                r1.mtrivial()
+            else:
+                r1.unit = a2.unit.union(p1.unit)
+            if sa1.intersection(p2.unit):
+                r2.mtrivial()
+            else:
+                r2.unit = a1.unit.union(p2.unit)
 
+            r1.insert(p1)
+            r1.insert(a2)
+            r2.insert(p2)
+            r2.insert(a1)
+        
+            return (r1, r2)
 
-                r1.insert(p1)
-                r1.insert(a2)
-                r2.insert(p2)
-                r2.insert(a1)
-            
-                return (r1,r2)
+        if isinstance(p, nodoTabla):
+            r = mix()
+            r.insert(p)
+            return self.resolution(r, var)
 
-            if isinstance(p,nodoTabla):
-                r = mix()
-                r.insert(p)
-                return self.resolution(r,var)
-
-            
-               
-    def combina(self,p):
+    def combina(self, p):
         result = mix()
-        if isinstance(p,nodoTabla):
+        if isinstance(p, nodoTabla):
             for q in self.lt:
-                result.insert(q.combina(p,inplace= False))
+                result.insert(q.combina(p, inplace=False))
             return result
-        if isinstance(p,mix):
+        if isinstance(p, mix):
             if self.unit.intersection({-v for v in p.unit}):
                 result.mtrivial()
                 return result
@@ -326,7 +283,7 @@ class mix:
             for q in self.lt: 
                 for v in p.unit:
                     if abs(v) in q.getvars():
-                        q= q.reduce(-v)
+                        q = q.reduce(-v)
                 l1.append(q)
             
             for r in p.lt:
@@ -335,41 +292,29 @@ class mix:
                         r = r.reduce(-v)
                 l2.append(r)
             for q in self.lt:
-                  for r in p.lp:
-                      h = q.combina(r)
-                      result.insert(h)
+                for r in p.lt: # Corregido p.lp -> p.lt
+                    h = q.combina(r)
+                    result.insert(h)
 
             result.unit = self.unit.union(p.unit)
             return result
-              
 
-
-                  
-                    
-
-    def remove(self,p):
-    
-        if isinstance(p,nodoTabla):
+    def remove(self, p):
+        if isinstance(p, nodoTabla):
             self.lt.remove(p)
-        
-
         return 
-        
-            
     
-    def reduce(self,v):
+    def reduce(self, v):
         res = mix()
-        if isinstance(v,set):
+        if isinstance(v, set):
             if self.unit.intersection(v):
                 res.mtrivial()
                 return res
-            vn = set(map(lambda x: -x,v))
+            vn = set(map(lambda x: -x, v))
             res.unit = self.unit - vn
             for p in self.lt:
                 h = p.reduce(v)
                 res.insert(h)
-                            
-
             return res
         
         if v in self.unit:
@@ -380,68 +325,71 @@ class mix:
             res.unit = self.unit - {-v}
             return res
         var = abs(v)
-        
-        
         res.unit = self.unit.copy()
         
         for p in self.lt:
-                if var in p.getvars():
-                    h = p.reduce(v)
-                    res.lt.append(h)
-                else:
-                    res.lt.append(p)
+            if var in p.getvars():
+                h = p.reduce(v)
+                res.lt.append(h)
+            else:
+                res.lt.append(p)
         return res
 
-        
-
-
-        
-            
-
-
-
     def trivial(self):
-
-        
         for x in self.lt:
             if x.trivial():
                 return True
         return False
 
     def contradict(self):
-        
         if self.unit:
             return False
         for p in self.lt:
             if not p.contradict():
                 return False
         return True
-        
-            
-
-
-
 
 
 class nodoTabla:
-
-    
-    def __init__(self, lista):
-        
-        self.listavar = lista
-        n = len(lista)
-        t = (2,)*n
-        self.tabla = np.ones( dtype = boolean, shape = t)
+    def __init__(self, lista, device=DEFAULT_DEVICE):
+        self.listavar = list(lista)
+        self.device = device
+        n = len(self.listavar)
+        t = (2,) * n
+        self.tabla = torch.ones(size=t, dtype=torch.bool, device=self.device)
         self.det = []
         self.mindet = []
 
-    
+    def _es_escalar_bool(self, t):
+        return isinstance(t, bool) or (isinstance(t, torch.Tensor) and t.ndim == 0 and t.dtype == torch.bool)
+
+    def _val_bool(self, t):
+        return t.item() if isinstance(t, torch.Tensor) else bool(t)
+
+    def _alinear_tensores(self, result, op):
+        extra_op = set(op.getvars()) - set(result.getvars())
+        if extra_op:
+            slice_ = [slice(None)] * len(result.getvars()) + [None] * len(extra_op)
+            result.tabla = result.tabla[tuple(slice_)]
+            result.listavar.extend(extra_op)
+
+        extra_res = set(result.getvars()) - set(op.getvars())
+        if extra_res:
+            slice_ = [slice(None)] * len(op.listavar) + [None] * len(extra_res)
+            op.tabla = op.tabla[tuple(slice_)]
+            op.listavar.extend(extra_res)
+
+        perm = [op.listavar.index(v) for v in result.listavar]
+        if perm:
+            op.tabla = op.tabla.permute(*perm)
+            op.listavar = result.listavar.copy()
+
     def copia(self):
-        result = nodoTabla(self.listavar.copy())
-        if isinstance(self.tabla,boolean) or isinstance(self.tabla,int):
+        result = nodoTabla(self.listavar.copy(), device=self.device)
+        if isinstance(self.tabla, (bool, int, float)):
             result.tabla = self.tabla
         else:
-            result.tabla = self.tabla.copy()
+            result.tabla = self.tabla.clone()
         result.det = self.det.copy()
         result.mindet = self.mindet.copy()
         return result
@@ -449,357 +397,217 @@ class nodoTabla:
     def getvars(self):
         return self.listavar
     
-    def extrae2(self,vars):
+    def extrae2(self, vars):
         res = []
-        if len(vars)>=2:
+        if len(vars) >= 2:
             for v in vars:
-                res.extend(self.extrae2(vars-{v}))
-                res.extend(self.extrae21(v,vars-{v}))
+                res.extend(self.extrae2(vars - {v}))
+                res.extend(self.extrae21(v, vars - {v}))
         return res
 
-    def extrae21(self,v,vars):
+    def extrae21(self, v, vars):
         res = []
         for w in vars:
-            p = self.borra(list(set(self.listavar) - {v,w}), inplace=False)
+            p = self.borra(list(set(self.listavar) - {v, w}), inplace=False)
             if not p.trivial():
                 res.append(p)
         return res
 
-
-
-    def descomponev(self,v):
+    def descomponev(self, v):
         res = []
-        h = self.borra([v], inplace = False)
+        h = self.borra([v], inplace=False)
+        t = self.minimiza(h, pro={v})
 
-        
-
-        t = self.minimiza(h, pro = {v})
-
-        if len(t.listavar) ==len(self.listavar):
+        if len(t.listavar) == len(self.listavar):
             res.append(self)
         else:
             res.append(t)
             res.append(h)
-
-
         return res
 
-
-
-    def entropia(self,v):
-            (x0,x1) = self.cuenta(v)
-            if x0==0 or x1==0:
-                return 0.0
-            else:
-                z0 = x0/(x0+x1)
-                z1  = x1/(x0+x1)
-                x = (-z0*math.log(z0) - z1*math.log(z1))
-            return x
+    def entropia(self, v):
+        (x0, x1) = self.cuenta(v)
+        if x0 == 0 or x1 == 0:
+            return 0.0
+        else:
+            z0 = x0 / (x0 + x1)
+            z1 = x1 / (x0 + x1)
+            x = (-z0 * math.log(z0) - z1 * math.log(z1))
+        return x
     
-    def mincuenta(self,v):
-            (x0,x1) = self.cuenta(v)
-            return min(x0,x1)
-            
+    def mincuenta(self, v):
+        (x0, x1) = self.cuenta(v)
+        return min(x0, x1)
 
     def minentropia(self):
-            
-            return min(self.listavar,key = lambda v: self.mincuenta(v))
+        return min(self.listavar, key=lambda v: self.mincuenta(v))
 
-
-    def neg(self,inplace=False):
-        
-        nuevatabla = np.logical_not(self.tabla)
+    def neg(self, inplace=False):
+        nuevatabla = torch.logical_not(self.tabla) if isinstance(self.tabla, torch.Tensor) else not self.tabla
         if inplace:
             self.tabla = nuevatabla
             res = self
         else:
-            res = nodoTabla(self.listavar.copy())
+            res = nodoTabla(self.listavar.copy(), device=self.device)
             res.tabla = nuevatabla
             res.det = self.det.copy()
             res.mindet = self.mindet.copy()
-
         return res
 
-
-    def equivalente(self,p):
-       
-        if not self.context == p.context:
+    def equivalente(self, p):
+        if not getattr(self, 'context', None) == getattr(p, 'context', None):
             return False
         if self.suma(p.neg()).trivial() and p.suma(self.neg()).trivial():
             return True
         else:
             return False
 
-
-    def implicadopor(self,p):
-
-        if isinstance(p,mix) and p.unit:
+    def implicadopor(self, p):
+        if isinstance(p, mix) and p.unit:
             return False
-        elif isinstance(p,mix):
+        elif isinstance(p, mix):
             for h in p.lt:
                 if not self.implicadopor(h):
                     return False
             return True
         
-
         if self.suma(p.neg()).trivial():
             return True
         else:
             return False
 
-    def minimiza(self, con  , pro = set()):
-        rest =  set(self.listavar)-pro
+    def minimiza(self, con, pro=None):
+        if pro is None:
+            pro = set()
+        rest = set(self.listavar) - pro
         if not rest:
             return self
         else:
             v = rest.pop()
             h = self.borra([v], inplace=False)
             if self.implicadopor(h.combina(con)):
-                return h.minimiza(con,pro)
+                return h.minimiza(con, pro)
             else:
                 pro.add(v)
-                return self.minimiza(con,pro)
+                return self.minimiza(con, pro)
 
-
-
-
-
-    def combina(self,op,inplace = False, des= False):
-
-       
-        
-        if isinstance(self.tabla,boolean):
-            if self.tabla:
+    def combina(self, op, inplace=False, des=False):
+        if self._es_escalar_bool(self.tabla):
+            if self._val_bool(self.tabla):
                 if inplace:
-                    self = op.copia()
+                    self.__dict__.update(op.copia().__dict__)
                     return self
                 else:
                     return op.copia()
             else:
-                if inplace:
-                    return self
-                else:
-                    return self.copia()
-            
-
-            
+                return self if inplace else self.copia()
         
         result = self if inplace else self.copia()
-        
-
         result.det = result.det + [x for x in op.det if x not in result.det]
         result.mindet = []
 
-        
-
-        if isinstance(op.tabla,boolean):
-            if op.tabla:
+        if self._es_escalar_bool(op.tabla):
+            if self._val_bool(op.tabla):
                 return result
             else:
-                result.tabla = nodoTabla([])
                 result.anula()
                 return result
         
         if not des:
             op = op.copia()
-        extra = set(op.getvars()) - set(result.getvars())
-        if extra:
-                slice_ = [slice(None)] * len(result.getvars())
-                slice_.extend([np.newaxis] * len(extra))
 
-                result.tabla = result.tabla[tuple(slice_)]
-
-                result.listavar.extend(extra)
-
-        extra = set(result.getvars()) - set(op.getvars())
-        if extra:
-                slice_ = [slice(None)] * len(op.listavar)
-                slice_.extend([np.newaxis] * len(extra))
-
-                op.tabla = op.tabla[tuple(slice_)]
-
-                op.listavar.extend(extra)
-                # No need to modify cardinality as we don't need it.
-
-            # rearranging the axes of phi1 to match phi
-        for axis in range(result.tabla.ndim):
-            exchange_index = op.listavar.index(result.listavar[axis])
-            op.listavar[axis], op.listavar[exchange_index] = (
-                op.listavar[exchange_index],
-                op.listavar[axis],
-            )
-            op.tabla = op.tabla.swapaxes(axis, exchange_index)
-
+        self._alinear_tensores(result, op)
         result.tabla = result.tabla & op.tabla    
         if not inplace:
             return result
-        
+        return self
 
-    
-
-    def combinab(self,op,inplace = False, des= False):
+    def combinab(self, op, inplace=False, des=False):
         from arboltabla import arbol
 
-        if isinstance(op,arbol):
+        if isinstance(op, arbol):
             return op.combina(self)
         
-        if isinstance(self.tabla,boolean):
-            if self.tabla:
+        if self._es_escalar_bool(self.tabla):
+            if self._val_bool(self.tabla):
                 if inplace:
-                    self = op.copia()
+                    self.__dict__.update(op.copia().__dict__)
                     return self
                 else:
                     return op.copia()
             else:
-                if inplace:
-                    return self
-                else:
-                    return self.copia()
-                
-        
+                return self if inplace else self.copia()
             
-        if isinstance(self.tabla,float)or isinstance(self.tabla,int) :
-                x = self.tabla
-                if inplace:
-                    
-                    self = op
-                    self.tabla = self.tabla*x
-                    return self
-                else:
-                    h = op.copia()
-                    h.tabla = h.tabla*self.tabla
-                    return h
-        
-            
+        if isinstance(self.tabla, (float, int)) or (isinstance(self.tabla, torch.Tensor) and self.tabla.ndim == 0 and self.tabla.dtype != torch.bool):
+            x = self.tabla
+            if inplace:
+                self.__dict__.update(op.__dict__)
+                self.tabla = self.tabla * x
+                return self
+            else:
+                h = op.copia()
+                h.tabla = h.tabla * x
+                return h
 
         result = self if inplace else self.copia()
 
-        if isinstance(op.tabla,boolean):
-            if op.tabla:
+        if self._es_escalar_bool(op.tabla):
+            if self._val_bool(op.tabla):
                 return result
             else:
-                result.tabla = nodoTabla([])
                 result.anula()
                 return result
         
         if not des:
             op = op.copia()
-        extra = set(op.getvars()) - set(result.getvars())
-        if extra:
-                slice_ = [slice(None)] * len(result.getvars())
-                slice_.extend([np.newaxis] * len(extra))
 
-                result.tabla = result.tabla[tuple(slice_)]
-
-                result.listavar.extend(extra)
-
-        extra = set(result.getvars()) - set(op.getvars())
-        if extra:
-                slice_ = [slice(None)] * len(op.listavar)
-                slice_.extend([np.newaxis] * len(extra))
-
-                op.tabla = op.tabla[tuple(slice_)]
-
-                op.listavar.extend(extra)
-                # No need to modify cardinality as we don't need it.
-
-            # rearranging the axes of phi1 to match phi
-        for axis in range(result.tabla.ndim):
-            exchange_index = op.listavar.index(result.listavar[axis])
-            op.listavar[axis], op.listavar[exchange_index] = (
-                op.listavar[exchange_index],
-                op.listavar[axis],
-            )
-            op.tabla = op.tabla.swapaxes(axis, exchange_index)
-
+        self._alinear_tensores(result, op)
         result.tabla = result.tabla * op.tabla    
         if not inplace:
             return result
+        return self
 
-    
-
-    def divideb(self,op,inplace = False, des= False):
+    def divideb(self, op, inplace=False, des=False):
         from arboltabla import arbol
 
-        if isinstance(op,arbol):
+        if isinstance(op, arbol):
             return op.combina(self)
         
-        if isinstance(self.tabla,boolean):
-            if self.tabla:
+        if self._es_escalar_bool(self.tabla):
+            if self._val_bool(self.tabla):
                 if inplace:
-                    self = op.copia()
+                    self.__dict__.update(op.copia().__dict__)
                     return self
                 else:
                     return op.copia()
             else:
-                if inplace:
-                    return self
-                else:
-                    return self.copia()
-            
-
-            
+                return self if inplace else self.copia()
 
         result = self if inplace else self.copia()
 
-        if isinstance(op.tabla,boolean):
-            if op.tabla:
+        if self._es_escalar_bool(op.tabla):
+            if self._val_bool(op.tabla):
                 return result
             else:
-                result.tabla = nodoTabla([])
                 result.anula()
                 return result
         
         if not des:
             op = op.copia()
-        extra = set(op.getvars()) - set(result.getvars())
-        if extra:
-                slice_ = [slice(None)] * len(result.getvars())
-                slice_.extend([np.newaxis] * len(extra))
 
-                result.tabla = result.tabla[tuple(slice_)]
-
-                result.listavar.extend(extra)
-
-        extra = set(result.getvars()) - set(op.getvars())
-        if extra:
-                slice_ = [slice(None)] * len(op.listavar)
-                slice_.extend([np.newaxis] * len(extra))
-
-                op.tabla = op.tabla[tuple(slice_)]
-
-                op.listavar.extend(extra)
-                # No need to modify cardinality as we don't need it.
-
-            # rearranging the axes of phi1 to match phi
-        for axis in range(result.tabla.ndim):
-            exchange_index = op.listavar.index(result.listavar[axis])
-            op.listavar[axis], op.listavar[exchange_index] = (
-                op.listavar[exchange_index],
-                op.listavar[axis],
-            )
-            op.tabla = op.tabla.swapaxes(axis, exchange_index)
-        
-        result.tabla = result.tabla/op.tabla   
-
-        result.tabla[np.isnan(result.tabla)] = 0
-
-
-            
-
+        self._alinear_tensores(result, op)
+        result.tabla = result.tabla / op.tabla   
+        result.tabla[torch.isnan(result.tabla)] = 0
           
         if not inplace:
             return result
+        return self
 
-
-    def checkdetermi(self,v):
+    def checkdetermi(self, v):
         if v not in self.listavar:
             return False
         t0 = self.reduce([v])
         t1 = self.reduce([-v])
-
-       
-
         t = t0.combina(t1, inplace=False)
 
         if t.contradict():
@@ -809,20 +617,15 @@ class nodoTabla:
         else:
             return False
 
-    def computedet(self,v):
-        
+    def computedet(self, v):
         t0 = self.reduce([v])
         t1 = self.reduce([-v])
-        
-               
-        
-        return  t0.combina(t1, inplace=False)
+        return t0.combina(t1, inplace=False)
 
+    def contenida(self, listanodos):
+        return u.contenida(self, listanodos) 
 
-    def contenida(self,listanodos):
-        return u.contenida(self,listanodos) 
-
-    def minimizadep(self,v, seg = None):
+    def minimizadep(self, v, seg=None):
         if v in self.mindet:
             return self
         if not seg:
@@ -834,26 +637,19 @@ class nodoTabla:
             self.mindet.append(v)
             return self
         
-        
         nv = vars.pop()
+        np_node = self.borra([nv])
 
-        np = self.borra([nv])
-
-        
-
-        if not np.trivial() and np.checkdetermi(v):
-            
-            return np.minimizadep(v, seg.copy())
+        if not np_node.trivial() and np_node.checkdetermi(v):
+            return np_node.minimizadep(v, seg.copy())
         else:
             seg.add(nv)
-            return self.minimizadep(v,seg)
-
+            return self.minimizadep(v, seg)
 
     def extraesimple(self):
-        
         vars = set(self.listavar)
         if not vars:
-            return nodoTabla([])
+            return nodoTabla([], device=self.device)
         v = vars.pop()
 
         pv = self.borra(list(vars))
@@ -861,176 +657,100 @@ class nodoTabla:
             return pv
         else:
             pr = self.borra([v])
-
             if not pr.trivial():
                 sr = pr.extraesimple()
                 if not sr.trivial():
                     return sr
                 else:
-                    h2 = self.extrasimple2(v,vars)
+                    h2 = self.extrasimple2(v, vars)
                     return h2
             else:
-                return nodoTabla([])
+                return nodoTabla([], device=self.device)
 
-    def mejora(self,q):
-            vars = list(set(q.listavar) - set(self.listavar))
-            res = self.combina(q.borra(vars))
-            return res
+    def mejora(self, q):
+        vars = list(set(q.listavar) - set(self.listavar))
+        res = self.combina(q.borra(vars))
+        return res
 
-    def extrasimple2(self,v1,vars):
+    def extrasimple2(self, v1, vars):
         if not vars:
-            return nodoTabla([])
+            return nodoTabla([], device=self.device)
         v2 = vars.pop()
-
         pv12 = self.borra(list(vars))
 
         if pv12.checkdetermi(v2) or pv12.checkdetermi(v1):
             return pv12
         else:
             pr = self.borra([v2])
+            return pr.extrasimple2(v1, vars)
 
-            return pr.extrasimple2(v1,vars)
-
-
-
-    
-
-
-    def suma(self,op,inplace = False, des= False):
+    def suma(self, op, inplace=False, des=False):
         result = self if inplace else self.copia()
         result.det = self.det.copy()
         result.mindet = self.mindet.copy()
-        if isinstance(op.tabla,boolean):
-            if op:
+        
+        if self._es_escalar_bool(op.tabla):
+            if self._val_bool(op.tabla):
                 return result
             else:
                 result.tabla = result.tabla | op.tabla
                 return result
             
-        if isinstance(self.tabla,boolean):
-            if self.tabla:
+        if self._es_escalar_bool(self.tabla):
+            if self._val_bool(self.tabla):
                 return result
             else:
-                    result = op.copia()
-                    return result
-                
-
-                
-            
+                result = op.copia()
+                return result
 
         if not des:
             op = op.copia()
-        extra = set(op.listavar) - set(result.listavar)
-        if extra:
-                slice_ = [slice(None)] * len(result.listavar)
-                slice_.extend([np.newaxis] * len(extra))
 
-                result.tabla = result.tabla[tuple(slice_)]
-
-                result.listavar.extend(extra)
-
-        extra = set(result.listavar) - set(op.listavar)
-        if extra:
-                slice_ = [slice(None)] * len(op.listavar)
-                slice_.extend([np.newaxis] * len(extra))
-
-                op.tabla = op.tabla[tuple(slice_)]
-
-                op.listavar.extend(extra)
-                # No need to modify cardinality as we don't need it.
-
-            # rearranging the axes of phi1 to match phi
-        for axis in range(result.tabla.ndim):
-            exchange_index = op.listavar.index(result.listavar[axis])
-            op.listavar[axis], op.listavar[exchange_index] = (
-                op.listavar[exchange_index],
-                op.listavar[axis],
-            )
-            op.tabla = op.tabla.swapaxes(axis, exchange_index)
-
+        self._alinear_tensores(result, op)
         result.tabla = result.tabla | op.tabla    
         if not inplace:
             return result
+        return self
 
-
-
-    def sumab(self,op,inplace = False, des= False):
+    def sumab(self, op, inplace=False, des=False):
         result = self if inplace else self.copia()
-        if isinstance(op.tabla,boolean):
-            if op:
+        if self._es_escalar_bool(op.tabla):
+            if self._val_bool(op.tabla):
                 return result
             else:
                 result.tabla = result.tabla | op.tabla
                 return result
             
-        if isinstance(self.tabla,boolean):
-            if self.tabla:
+        if self._es_escalar_bool(self.tabla):
+            if self._val_bool(self.tabla):
                 return result
             else:
-                    result = op.copia()
-                    return result
-                
-
-                
-            
+                result = op.copia()
+                return result
 
         if not des:
             op = op.copia()
-        extra = set(op.listavar) - set(result.listavar)
-        if extra:
-                slice_ = [slice(None)] * len(result.listavar)
-                slice_.extend([np.newaxis] * len(extra))
 
-                result.tabla = result.tabla[tuple(slice_)]
-
-                result.listavar.extend(extra)
-
-        extra = set(result.listavar) - set(op.listavar)
-        if extra:
-                slice_ = [slice(None)] * len(op.listavar)
-                slice_.extend([np.newaxis] * len(extra))
-
-                op.tabla = op.tabla[tuple(slice_)]
-
-                op.listavar.extend(extra)
-                # No need to modify cardinality as we don't need it.
-
-            # rearranging the axes of phi1 to match phi
-        for axis in range(result.tabla.ndim):
-            exchange_index = op.listavar.index(result.listavar[axis])
-            op.listavar[axis], op.listavar[exchange_index] = (
-                op.listavar[exchange_index],
-                op.listavar[axis],
-            )
-            op.tabla = op.tabla.swapaxes(axis, exchange_index)
-
+        self._alinear_tensores(result, op)
         result.tabla = result.tabla + op.tabla    
         if not inplace:
             return result
-
+        return self
 
     def reduce(self, val, inplace=False):
-
-        if isinstance(val,int):
-            return self.reduce([val])
+        if isinstance(val, int):
+            return self.reduce([val], inplace=inplace)
         
-        values = filter(lambda x: abs(x) in  self.listavar, val)
-        phi = self if inplace else nodoTabla([])
-
+        values = [x for x in val if abs(x) in self.listavar]
+        phi = self if inplace else nodoTabla([], device=self.device)
 
         phi.mindet = []
         phi.det = []
-
         
-        values = [
-                (abs(var), 0 if var<0 else 1) for var in values
-            ]
+        values = [(abs(var), 0 if var < 0 else 1) for var in values]
         
         if not values:
-            if inplace:
-                return self
-            else:
-                return self.copia()
+            return self if inplace else self.copia()
             
         var_index_to_del = []
         slice_ = [slice(None)] * len(self.listavar)
@@ -1042,69 +762,45 @@ class nodoTabla:
         var_index_to_keep = sorted(
             set(range(len(self.listavar))) - set(var_index_to_del)
         )
-        # set difference is not guaranteed to maintain ordering
         phi.listavar = [self.listavar[index] for index in var_index_to_keep]
-        
+        phi.tabla = self.tabla[tuple(slice_)].clone()
 
-        phi.tabla= self.tabla[tuple(slice_)]
-
-        
         return phi
 
     def getvalue(self, val):
-        
-        values = filter(lambda x: abs(x) in  self.listavar, val)
-        vars = map(abs,val)
+        values = [x for x in val if abs(x) in self.listavar]
+        vars = map(abs, val)
 
         rest = set(self.listavar) - set(vars)
         if rest:
             return -1
 
-        values = [
-                (abs(var), 0 if var<0 else 1) for var in values
-            ]
-
-        var_index_to_del = []
+        values = [(abs(var), 0 if var < 0 else 1) for var in values]
         slice_ = [slice(None)] * len(self.listavar)
         for var, state in values:
             var_index = self.listavar.index(var)
             slice_[var_index] = state
-            var_index_to_del.append(var_index)
 
-        
-        
+        res = self.tabla[tuple(slice_)]
+        return res.item() if isinstance(res, torch.Tensor) and res.ndim == 0 else res
 
-        return self.tabla[tuple(slice_)]
-
-        
-    def setvalue(self, val,x):
-        
-        values = filter(lambda x: abs(x) in  self.listavar, val)
-        vars = map(abs,val)
+    def setvalue(self, val, x):
+        values = [x_val for x_val in val if abs(x_val) in self.listavar]
+        vars = map(abs, val)
 
         rest = set(self.listavar) - set(vars)
         if rest:
             return -1
 
-        values = [
-                (abs(var), 0 if var<0 else 1) for var in values
-            ]
-
-        var_index_to_del = []
+        values = [(abs(var), 0 if var < 0 else 1) for var in values]
         slice_ = [slice(None)] * len(self.listavar)
         for var, state in values:
             var_index = self.listavar.index(var)
             slice_[var_index] = state
-            var_index_to_del.append(var_index)
-
-        
-        
 
         self.tabla[tuple(slice_)] = x
 
-        
-    
-    def introducelista(self,lista):
+    def introducelista(self, lista):
         for cl in lista:
             self.introduceclau(cl)
     
@@ -1113,62 +809,39 @@ class nodoTabla:
             if abs(var) not in self.listavar:
                 raise ValueError(f"La variable: {abs(var)} no está en el potencial")
 
-
-        values = [
-                (abs(var), 1 if var<0 else 0) for var in values
-            ]
-
+        values = [(abs(var), 1 if var < 0 else 0) for var in values]
         slice_ = [slice(None)] * len(self.listavar)
         for var, state in values:
             var_index = self.listavar.index(var)
             slice_[var_index] = state
 
-        
-        # set difference is not guaranteed to maintain ordering
-        
-
         self.tabla[tuple(slice_)] = False
-
-        
 
     def introduceclaun(self, values):
         for var in values:
             if abs(var) not in self.listavar:
                 raise ValueError(f"La variable: {abs(var)} no está en el potencial")
 
-
-        values = [
-                (abs(var), 0 if var<0 else 1) for var in values
-            ]
-
+        values = [(abs(var), 0 if var < 0 else 1) for var in values]
         slice_ = [slice(None)] * len(self.listavar)
         for var, state in values:
             var_index = self.listavar.index(var)
             slice_[var_index] = state
 
-        
-        # set difference is not guaranteed to maintain ordering
-        
-
         self.tabla[tuple(slice_)] = False
 
     def checkxor(self):
-        index = np.argwhere(self.tabla)
-        even = all( sum(x) % 2==0 for x in index )
-        odd = all( sum(x) % 2==1 for x in index )
-
-        if even:
-            return (set(self.getvars()),False)
-        
-        if odd:
-            return (set(self.getvars()),True)
-        
+        index = torch.argwhere(self.tabla)
+        if index.numel() == 0:
+            return False
+        sums = index.sum(dim=1) % 2
+        if torch.all(sums == 0):
+            return (set(self.getvars()), False)
+        if torch.all(sums == 1):
+            return (set(self.getvars()), True)
         return False
-            
-        
 
-    def borra(self,variables, inplace=False):
-
+    def borra(self, variables, inplace=False):
         phi = self if inplace else self.copia()   
         for var in variables:
             if var not in phi.listavar:
@@ -1176,95 +849,89 @@ class nodoTabla:
         phi.det = []
         phi.mindet = []
         
+        if not variables:
+            return phi
 
         var_indexes = [phi.listavar.index(var) for var in variables]
-
         index_to_keep = sorted(set(range(len(self.listavar))) - set(var_indexes))
         phi.listavar = [phi.listavar[index] for index in index_to_keep]
 
-        phi.tabla = np.amax(phi.tabla, axis=tuple(var_indexes))
+        phi.tabla = torch.amax(phi.tabla, dim=tuple(var_indexes))
 
         if not inplace:
             return phi
-        
-           
-
-
+        return self
 
     def contradict(self):
-        return not np.amax(self.tabla)
+        if isinstance(self.tabla, bool):
+            return not self.tabla
+        return not torch.any(self.tabla).item()
 
-    def cuenta(self,v):
-        t0 = self.reduce([v],inplace=False)
-        t1 = self.reduce([-v],inplace=False)
-        x0 = np.sum(t0.tabla)
-        x1 = np.sum(t1.tabla)
-        return (x0,x1)
+    def cuenta(self, v):
+        t0 = self.reduce([v], inplace=False)
+        t1 = self.reduce([-v], inplace=False)
+        x0 = torch.sum(t0.tabla).item()
+        x1 = torch.sum(t1.tabla).item()
+        return (x0, x1)
 
     def anula(self):
-        
-        
-        
         self.listavar = []
-        self.tabla = np.zeros(dtype = boolean, shape = ())
+        self.tabla = torch.zeros(size=(), dtype=torch.bool, device=self.device)
 
     def trivial(self):
-        return  np.amin(self.tabla)
+        if isinstance(self.tabla, bool):
+            return self.tabla
+        return torch.all(self.tabla).item()
 
     def calculaunit(self):
         result = set()
         n = len(self.listavar)
-        if n==0:
-            if not self.tabla:
+        if n == 0:
+            if not self._val_bool(self.tabla):
                 result.add(0)
             return result
-        elif n==1:
-            if not self.tabla[0]:
-                if not self.tabla[1]:
+        elif n == 1:
+            if not bool(self.tabla[0]):
+                if not bool(self.tabla[1]):
                     result.add(0)
                     return result
                 else:
                     result.add(self.listavar[0])
-            elif not self.tabla[1]:
+            elif not bool(self.tabla[1]):
                 result.add(-self.listavar[0])
             return result
         
         total = set(range(n))
+        borra = tuple(total - {n - 1})
+        marg = torch.amax(self.tabla, dim=borra)
         
-            
-        borra = tuple(total-{n-1})
-        marg = np.amax(self.tabla,axis = borra)
-        
-        if not marg[0]:
-            if not marg[1]:
+        if not bool(marg[0]):
+            if not bool(marg[1]):
                 result.add(0)
                 return result
             else:
-                result.add(self.listavar[n-1])
-        elif  not marg[1]:    
-                result.add(-self.listavar[n-1])
+                result.add(self.listavar[n - 1])
+        elif not bool(marg[1]):    
+            result.add(-self.listavar[n - 1])
 
         if 0 in result:
             return result
-        h = self.borra([self.listavar[n-1]],inplace=False)
+        h = self.borra([self.listavar[n - 1]], inplace=False)
         result.update(h.calculaunit())
 
         return result
 
     def univar(self):
-        if not len(self.getvars()) ==1:
+        if len(self.getvars()) != 1:
             return None
-        if not self.tabla[0] and self.tabla[1]:
-            return self.gervars()[0]
-        if self.tabla[0] and not self.tabla[1]:
-            return -self.gervars()[0]
+        if not bool(self.tabla[0]) and bool(self.tabla[1]):
+            return self.getvars()[0]
+        if bool(self.tabla[0]) and not bool(self.tabla[1]):
+            return -self.getvars()[0]
         return None
-        
-          
     
-    def resolution(self,p,var):
-        
-        if isinstance(p,nodoTabla):
+    def resolution(self, p, var):
+        if isinstance(p, nodoTabla):
             r1 = mix()
             r2 = mix()
             p1 = p.reduce(var)
@@ -1275,19 +942,10 @@ class nodoTabla:
             r1.insert(a2)
             r2.insert(p2)
             r2.insert(a1) 
-            return (r1,r2)
+            return (r1, r2)
             
-        if isinstance(p,mix):
-            return p.resolution(self,var)
-        
-               
-                        
-
-
-            
-
-    
-
+        if isinstance(p, mix):
+            return p.resolution(self, var)
 
 
 

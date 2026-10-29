@@ -756,7 +756,7 @@ class varpot:
                 
                 
 
-                for i in range(20):
+                for i in range(50):
                     old = self.A     
                     print(">>>>>>>>>>>>>>>Q= ",self.Q)
                       
