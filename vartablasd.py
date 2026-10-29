@@ -638,9 +638,11 @@ class varpot:
             self.mejoraup()
             
             new = self.A
+            count = 0
             if old == new and self.Q < 25:
-                self.Q += 0.25
-            if self.A == -1:
+                self.Q += 0.1
+                count += 0
+            if self.A == -1 or count == 30:
                 break
 
     def compilesecond(self):
