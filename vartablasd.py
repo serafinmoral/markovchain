@@ -626,7 +626,7 @@ class varpot:
         self.compileup()
         self.mejoraup()
         
-        for i in range(100):
+        for i in range(200):
             old = self.A     
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
               
@@ -639,7 +639,7 @@ class varpot:
             
             new = self.A
             if old == new and self.Q < 25:
-                self.Q += 1
+                self.Q += 0.25
             if self.A == -1:
                 break
 
