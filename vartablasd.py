@@ -619,7 +619,7 @@ class varpot:
                 self.parent[v] = -1
 
     def compile(self, verb=True):
-        self.Q = 20
+        self.Q = 24
         self.compiletotal()
         print(len(self.orden) - self.A)
         self.computehyper()
