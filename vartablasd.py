@@ -573,9 +573,12 @@ class varpot:
     def regenerate(self, v, second=False):
         var = abs(v)
         if var in self.tablas:
-            for p in self.tablas[var].copy():
+            lista = self.tablas[var].copy()
+            for p in lista:
                 self.eliminar(p)
-                self.insertar(p)
+            for p in lista:
+                q = p.reduce([v])
+                self.insertar(q)
         if var in self.posvar:
             K = self.posvar[var] - 1
         else:
@@ -633,6 +636,7 @@ class varpot:
         for i in range(200):
             old = self.A     
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
+            sleep(1)
               
             self.preset()
             self.compiletotal()
