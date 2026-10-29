@@ -648,7 +648,7 @@ class varpot:
             new = self.A
             count = 0
             if old == new and self.Q < 25:
-                self.Q += 0.1
+                self.Q += 1
                 count += 1
             else:
                 count = 0
@@ -665,10 +665,10 @@ class varpot:
             print("elijo ", v)
             sleep(10)
             pos = self.reduce(v)
-            pos.compile()
+            pos.compile(H=25)
             if pos.contradict:
                 self = self.reduce(-v)
-                self.compile()
+                self.compile(H=25)
             else:
               print("solucion encontrada con ", v)
               pos = self.reduce(-v)
