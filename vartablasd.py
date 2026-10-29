@@ -646,7 +646,8 @@ class varpot:
                 count = 0
             if self.A == -1 or count == 20:
                 break
-
+            
+        self.preset()
         remain = self.svars - set(self.orden)  
         remain = remain - set(map(abs, self.unit))
 
