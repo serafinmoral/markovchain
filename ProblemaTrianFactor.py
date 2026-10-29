@@ -8,7 +8,6 @@ Created on Tue Oct 19 20:13:39 2021
 from operator import index
 import time
 
-from numpy import False_
 from vartablasd import *
 
 from SimpleClausulas import *
