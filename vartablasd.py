@@ -641,8 +641,8 @@ class varpot:
             count = 0
             if old == new and self.Q < 25:
                 self.Q += 0.1
-                count += 0
-            if self.A == -1 or count == 30:
+                count += 1
+            if self.A == -1 or count == 20:
                 break
 
         remain = self.svars - set(self.orden)  
