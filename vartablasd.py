@@ -642,6 +642,8 @@ class varpot:
             if old == new and self.Q < 25:
                 self.Q += 0.1
                 count += 1
+            else:
+                count = 0
             if self.A == -1 or count == 20:
                 break
 
