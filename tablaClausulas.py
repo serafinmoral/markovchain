@@ -18,8 +18,8 @@ import math
 import random
 
 # Configura 'cuda' si tienes GPU disponible y trabajas con tablas grandes, o 'cpu'
-DEFAULT_DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+# DEFAULT_DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+DEFAULT_DEVICE = torch.device('cpu')
 
 def tableunit(x, device=DEFAULT_DEVICE):
     res = nodoTabla([abs(x)], device=device)
