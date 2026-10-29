@@ -622,8 +622,8 @@ class varpot:
             else:
                 self.parent[v] = -1
 
-    def compile(self, verb=True):
-        self.Q = 10
+    def compile(self, verb=True, H=10):
+        self.Q = hex
         self.compiletotal()
         print(len(self.orden) - self.A)
         self.computehyper()
@@ -668,10 +668,10 @@ class varpot:
             else:
               print("solucion encontrada con ", v)
               pos = self.reduce(-v)
-              pos.compile()  
+              pos.compile(H=25)  
               if pos.contradict:
                 self = self.reduce(v)
-                self.compile()
+                self.compile(H=25)
               else:
                  print("solucion encontrada con ", -v)
 
