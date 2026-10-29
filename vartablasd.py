@@ -626,7 +626,7 @@ class varpot:
         self.compileup()
         self.mejoraup()
         
-        for i in range(20):
+        for i in range(100):
             old = self.A     
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
               
