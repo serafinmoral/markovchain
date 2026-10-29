@@ -1374,6 +1374,7 @@ class varpot:
     def reduce(self, v):
         res = self.copia()
         res.insertvar(v)
+        return res
         
     def tosecond(self):
         self.second = True
