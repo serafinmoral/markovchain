@@ -1143,7 +1143,7 @@ class varpot:
             lred = [p for p in lista if x in p.det]
             if lred:
                 mp = min(lred,key = lambda x : len(x.getvars()))
-                if len(mp.getvars() == 2):
+                if len(mp.getvars()) == 2:
                     return x
 
         
