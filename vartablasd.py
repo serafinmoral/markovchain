@@ -309,7 +309,7 @@ class varpot:
                 for p in self.wait[v]:
                     listi.append(p)
                 del self.wait[v]
-            if self.det[v] and len(self.compiled[v].getvars()) <= L:
+            if self.det[v] and len(self.compiled[v].getvars()) <= L and v in self.compiled[v].getvars():
                 listd.append((v, self.compiled[v]))
             del self.compiled[v]
             del self.posvar[v]
@@ -650,7 +650,7 @@ class varpot:
             if old == new and self.Q < 25:
                 self.Q += 1
                 count += 1
-            else:
+            elif not old == new:
                 count = 0
             if self.A == -1 or count == 20:
                 break
