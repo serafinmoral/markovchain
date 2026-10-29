@@ -619,7 +619,7 @@ class varpot:
                 self.parent[v] = -1
 
     def compile(self, verb=True):
-        self.Q = 20
+        self.Q = 10
         self.compiletotal()
         print(len(self.orden) - self.A)
         self.computehyper()
@@ -638,7 +638,7 @@ class varpot:
             self.mejoraup()
             
             new = self.A
-            if old == new and self.Q < 32:
+            if old == new and self.Q < 25:
                 self.Q += 1
             if self.A == -1:
                 break
