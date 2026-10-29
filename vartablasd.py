@@ -645,6 +645,29 @@ class varpot:
             if self.A == -1 or count == 30:
                 break
 
+        remain = self.svars - set(self.orden)  
+        remain = remain - set(map(abs, self.unit))
+
+        if not self.A == -1:
+            v = self.choose(remain)
+            print("elijo ", v)
+            sleep(10)
+            pos = self.reduce(v)
+            pos.compile()
+            if pos.contradict:
+                self = self.reduce(-v)
+                self.compile()
+            else:
+              print("solucion encontrada con ", v)
+              pos = self.reduce(-v)
+              pos.compile()  
+              if pos.contradict:
+                self = self.reduce(v)
+                self.compile()
+              else:
+                 print("solucion encontrada con ", -v)
+
+
     def compilesecond(self):
         for v in self.orden[:self.A - 1:-1]:
             print(v, self.posvar[v])
@@ -1107,6 +1130,13 @@ class varpot:
                 return x
         miv = min(pos, key=lambda x: self.tadm(x))
         return miv
+
+
+    def choose(self, pos):
+        
+        miv = max(pos, key=lambda x: self.tadm(x))
+        return miv
+    
 
     def borrav(self, var):
         lista = []
