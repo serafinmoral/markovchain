@@ -638,7 +638,7 @@ class varpot:
             self.mejoraup()
             
             new = self.A
-            if old == new and self.Q < 25:
+            if old == new and self.Q < 32:
                 self.Q += 1
             if self.A == -1:
                 break
