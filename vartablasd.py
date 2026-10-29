@@ -293,15 +293,15 @@ class varpot:
         self.det = dict()
         self.A = len(self.svars)
 
-    def preset(self, L=25, total=False):
+    def preset(self, L=25, total=True):
         if self.A == -1:
             return
         listi = []
         listd = []
         if total:
-            K = self.A
-        else:
             K = 0
+        else:
+            K = self.A
         for i in range(K, len(self.orden)):
             v = self.orden[i]
             listi.append(self.compiled[v])
@@ -580,7 +580,11 @@ class varpot:
             K = self.posvar[var] - 1
         else:
             K = len(self.orden) - 1
-        for i in range(K, self.A - 1, -1):
+        if self.A == -1:
+            L = -1
+        else:
+            L = self.A -1
+        for i in range(K, L, -1):
             va = self.orden[i]
             if self.second:
                 for j in range(len(self.compiled[va])):
@@ -1129,9 +1133,20 @@ class varpot:
 
     def siguientep(self, pos):
         for x in pos:
-            x1 = len(self.tablas.get(x)) if self.tablas.get(x) else 0
+            lista = self.tablas.get(x)
+            x1 = len(lista) if self.tablas.get(x) else 0
             if x1 <= 1:
                 return x
+            
+        for x in pos:
+            lista = self.tablas.get(x)
+            lred = [p for p in lista if x in p.det]
+            if lred:
+                mp = min(lred,key = lambda x = len(x.getvars()))
+                if len(mp.getvars() == 2):
+                    return x
+
+        
         miv = min(pos, key=lambda x: self.tadm(x))
         return miv
 
