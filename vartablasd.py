@@ -1358,15 +1358,7 @@ class varpot:
 
     def reduce(self, v):
         res = self.copia()
-        res.orden.remove(abs(v))
-        
-        lista = res.get(abs(v)) + res.getd(abs(v))
-        for p in lista:
-            res.eliminar(p)
-        for p in lista:
-            q = p.reduce({v})
-            res.insertar(q)
-        return res
+        res.insertvar(v)
         
     def tosecond(self):
         self.second = True
