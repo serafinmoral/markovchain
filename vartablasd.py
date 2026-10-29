@@ -623,7 +623,7 @@ class varpot:
                 self.parent[v] = -1
 
     def compile(self, verb=True, H=10):
-        self.Q = hex
+        self.Q = H
         self.compiletotal()
         print(len(self.orden) - self.A)
         self.computehyper()
