@@ -1142,7 +1142,7 @@ class varpot:
             lista = self.tablas.get(x)
             lred = [p for p in lista if x in p.det]
             if lred:
-                mp = min(lred,key = lambda x = len(x.getvars()))
+                mp = min(lred,key = lambda x : len(x.getvars()))
                 if len(mp.getvars() == 2):
                     return x
 
