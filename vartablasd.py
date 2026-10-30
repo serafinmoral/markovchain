@@ -250,7 +250,11 @@ def mejora(p, lista, Q):
     borralista(traba, vdel, Q)
     
     for q in traba:
-        p.combina(q, inplace=True)
+        if set(q.getvars()) <= set(p.getvars()):
+            p = p.combina(q)
+        else:
+            print("raro ", q.getvars(),p.getvars())
+            sleep(10)
 
     new = p.tabla.sum().item() if isinstance(p.tabla, torch.Tensor) else int(p.tabla)
     if new < old:
