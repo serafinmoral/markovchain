@@ -316,7 +316,8 @@ class varpot:
                     listi.append(p)
                 del self.wait[v]
             
-            del self.compiled[v]
+            if v in self.compiled:
+                del self.compiled[v]
             del self.posvar[v]
             del self.det[v]
 
@@ -660,9 +661,9 @@ class varpot:
                 count = 0
             if count == 20 and self.Q == 25:
                 break
-            if count == 3 and self.Q<25:
+            if count == 2 and self.Q<25:
                 count = 0
-                self.Q+= 1
+                self.Q+= 5
             
             
 
