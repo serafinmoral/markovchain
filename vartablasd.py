@@ -633,7 +633,7 @@ class varpot:
             else:
                 self.parent[v] = -1
 
-    def compile(self, verb=True, H=10):
+    def compile(self, verb=True, H=25):
         self.Q = H
         self.compiletotal()
         print(len(self.orden) - self.A)
