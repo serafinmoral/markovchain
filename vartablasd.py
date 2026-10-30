@@ -667,7 +667,7 @@ class varpot:
                 break
             if count == 2 and self.Q<25:
                 count = 0
-                self.Q+= 5
+                self.Q+= 1
             
             
 
