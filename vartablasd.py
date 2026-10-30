@@ -532,7 +532,7 @@ class varpot:
                     return
                 self.unit.add(-p.getvars()[0])
                 self.regenerate(-p.getvars()[0])
-        return
+            return 
 
         for v in svar:
             if v in self.tablas:
@@ -644,7 +644,7 @@ class varpot:
         for i in range(200):
             old = self.A     
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
-            
+            sleep(1)
               
             self.preset()
             if self.contradict:
@@ -679,6 +679,7 @@ class varpot:
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
             print("elijo ", v)
+            sleep(5)
             pos = self.reduce(v)
             pos.compile(H=25)
             if pos.contradict:
