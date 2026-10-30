@@ -635,7 +635,7 @@ class varpot:
         self.computehyper()
         self.compileup()
         self.mejoraup()
-        
+        count = 0
         for i in range(200):
             old = self.A     
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
@@ -643,17 +643,22 @@ class varpot:
               
             self.preset()
             self.compiletotal()
+            new = self.A
 
             print(len(self.orden) - self.A)
             self.computehyper()
             self.compileup()
             ok = self.mejoraup()
 
-            if not ok:
-                if self.Q<25:
-                    self.Q += 1
-                else:
-                    break
+            if new <= old:
+                count+= 1
+            else:
+                count = 0
+            if count == 10 and self.Q == 25:
+                break
+            if count == 10 and self.Q<25:
+                count = 0
+                self.Q+= 1
             
             
 
