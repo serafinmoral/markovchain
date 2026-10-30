@@ -639,8 +639,12 @@ class varpot:
 
     def compile(self, verb=True, H=10):
         self.Q = H
+        if self.contradict:
+            return
         self.compiletotal()
         print(len(self.orden) - self.A)
+        if self.contradict:
+            return
         self.computehyper()
         self.compileup()
         self.mejoraup()
@@ -655,6 +659,8 @@ class varpot:
                 break
             self.compiletotal()
             new = self.A
+            if self.A==-1:
+                return
 
             print(len(self.orden) - self.A)
             if self.contradict:
