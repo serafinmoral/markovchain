@@ -383,9 +383,9 @@ class varpot:
         if len(p.getvars()) == 1:
             print(p,self.unit,p.getvars()[0],self.tablas[p.getvars()[0]])
             if not bool(p.tabla[0]) and bool(p.tabla[1]):
-                self.unit.remove(p.getvars()[0])
+                self.unit.discard(p.getvars()[0])
             elif bool(p.tabla[0]) and not bool(p.tabla[1]):
-                self.unit.remove(-p.getvars()[0])
+                self.unit.discard(-p.getvars()[0])
 
         for v in p.getvars():
             self.tablas[v].remove(p)
@@ -772,9 +772,10 @@ class varpot:
                 if verb:
                     print("borrando variable one potential", var)
                 p = list[0]
-                self.eliminar(p)
                 if (len(p.getvars())==1):
                     print(p,p.getvars(),self.unit,self.tablas[p.getvars()[0]])
+                self.eliminar(p)
+                
                 self.orden.append(var)
                 self.posvar[var] = len(self.orden) - 1
                 h = p.borra([var], inplace=False)    
