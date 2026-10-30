@@ -724,7 +724,11 @@ class varpot:
 
     def compileup(self, partial=True):
         print("entro en compile up")
-        for i in range(len(self.orden) - 1, self.A - 1, -1):
+        if self.A == -1:
+            L = -1
+        else:
+            L = self.A - 1
+        for i in range(len(self.orden) - 1, L, -1):
             v = self.orden[i]
             if self.parent[v] > -1:
                 varpa = self.orden[self.parent[v]]
