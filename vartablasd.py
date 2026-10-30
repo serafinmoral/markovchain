@@ -255,6 +255,9 @@ def mejora(p, lista, Q):
     new = p.tabla.sum().item() if isinstance(p.tabla, torch.Tensor) else int(p.tabla)
     if new < old:
         print("mejora", new, old, 2**(len(p.getvars())), new / 2**(len(p.getvars())), old / 2**(len(p.getvars())))
+        return True
+    else:
+        return False
 
 
 class varpot:
@@ -640,20 +643,19 @@ class varpot:
               
             self.preset()
             self.compiletotal()
+
             print(len(self.orden) - self.A)
             self.computehyper()
             self.compileup()
-            self.mejoraup()
+            ok = self.mejoraup()
+
+            if not ok:
+                if self.Q<25:
+                    self.Q += 1
+                else:
+                    break
             
-            new = self.A
-            count = 0
-            if old == new and self.Q < 25:
-                self.Q += 1
-                count += 1
-            elif not old == new:
-                count = 0
-            if self.A == -1 or count == 20:
-                break
+            
 
         
 
@@ -663,10 +665,12 @@ class varpot:
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
             print("elijo ", v)
-            sleep(10)
+            sleep(5)
             pos = self.reduce(v)
             pos.compile(H=25)
             if pos.contradict:
+                print("contradiccion ")
+                sleep(2)
                 self = self.reduce(-v)
                 self.compile(H=25)
             else:
@@ -695,12 +699,15 @@ class varpot:
             K = self.A
         else:
             K = 0
-        
+
+        ok = False
         for v in self.orden[K:]:
-            mejora(self.compiled[v], self.hyperpot[v], self.Q)
+            ok = mejora(self.compiled[v], self.hyperpot[v], self.Q)
             if v in self.wait:
                 for p in self.wait[v]:
-                    mejora(p, self.hyperpot[v], self.Q) 
+                    th = mejora(p, self.hyperpot[v], self.Q) 
+                    ok = th | ok
+        return ok
 
     def compileup(self, partial=True):
         print("entro en compile up")
@@ -730,7 +737,8 @@ class varpot:
     def compiletotal(self, wait=True, test=True, verb=True):
         remain = self.svars - set(self.orden)  
         remain = remain - set(map(abs, self.unit))     
-
+        if self.contradict:
+            return
         K = len(remain) 
         while remain:
             var = self.siguientep(remain)
