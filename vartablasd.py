@@ -645,6 +645,8 @@ class varpot:
             sleep(1)
               
             self.preset()
+            if self.contradict:
+                break
             self.compiletotal()
             new = self.A
 
@@ -770,6 +772,8 @@ class varpot:
                     print("borrando variable one potential", var)
                 p = list[0]
                 self.eliminar(p)
+                if (len(p.getvars())==1):
+                    print(p,p.getvars(),self.unit,self.tablas[p.getvars()[0]])
                 self.orden.append(var)
                 self.posvar[var] = len(self.orden) - 1
                 h = p.borra([var], inplace=False)    
