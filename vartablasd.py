@@ -307,13 +307,15 @@ class varpot:
             K = self.A
         for i in range(K, len(self.orden)):
             v = self.orden[i]
-            listi.append(self.compiled[v])
+            if v in self.compiled:
+                listi.append(self.compiled[v])
+                if self.det[v] and len(self.compiled[v].getvars()) <= L and v in self.compiled[v].getvars():
+                    listd.append((v, self.compiled[v]))
             if v in self.wait:
                 for p in self.wait[v]:
                     listi.append(p)
                 del self.wait[v]
-            if self.det[v] and len(self.compiled[v].getvars()) <= L and v in self.compiled[v].getvars():
-                listd.append((v, self.compiled[v]))
+            
             del self.compiled[v]
             del self.posvar[v]
             del self.det[v]
