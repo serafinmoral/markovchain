@@ -646,6 +646,8 @@ class varpot:
             new = self.A
 
             print(len(self.orden) - self.A)
+            if self.contradict:
+                break
             self.computehyper()
             self.compileup()
             ok = self.mejoraup()
@@ -654,9 +656,9 @@ class varpot:
                 count+= 1
             else:
                 count = 0
-            if count == 10 and self.Q == 25:
+            if count == 20 and self.Q == 25:
                 break
-            if count == 10 and self.Q<25:
+            if count == 3 and self.Q<25:
                 count = 0
                 self.Q+= 1
             
