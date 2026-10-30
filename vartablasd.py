@@ -702,11 +702,11 @@ class varpot:
 
         ok = False
         for v in self.orden[K:]:
-            ok = mejora(self.compiled[v], self.hyperpot[v], self.Q)
+            th = mejora(self.compiled[v], self.hyperpot[v], self.Q)
+            ok = th|ok
             if v in self.wait:
                 for p in self.wait[v]:
                     th = mejora(p, self.hyperpot[v], self.Q) 
-                    ok = th | ok
         return ok
 
     def compileup(self, partial=True):
