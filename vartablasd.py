@@ -637,7 +637,7 @@ class varpot:
             else:
                 self.parent[v] = -1
 
-    def compile(self, verb=True, H=25):
+    def compile(self, verb=True, H=10):
         self.Q = H
         self.compiletotal()
         print(len(self.orden) - self.A)
@@ -671,7 +671,7 @@ class varpot:
                 break
             if count == 2 and self.Q<25:
                 count = 0
-                self.Q+= 1
+                self.Q+= 5
             
             
 
