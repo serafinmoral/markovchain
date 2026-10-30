@@ -381,6 +381,7 @@ class varpot:
 
     def eliminar(self, p):
         if len(p.getvars()) == 1:
+            print(p,self.unit,p.getvars()[0],self.tablas[v])
             if not bool(p.tabla[0]) and bool(p.tabla[1]):
                 self.unit.remove(p.getvars()[0])
             elif bool(p.tabla[0]) and not bool(p.tabla[1]):
