@@ -268,7 +268,7 @@ def combinaincluidas(lista, K=0, Q=25):
         i+=1
     lista.reverse()
 
-def agrupatam(lista):
+def agrupatam(lista,Q=25):
     
     lista.sort(key = lambda x : - len(x.getvars()) )
 
@@ -282,7 +282,7 @@ def agrupatam(lista):
             # print("lista, i, j", len(lista), i, j)
             s1 = set(lista[j].listavar)
             s2 = set(lista[i].listavar)
-            if s1 <= s2 or ((len(s1) == len(s2) and (len(s1-s2) == 1))):
+            if s1 <= s2 or ((len(s1) == len(s2) and (len(s1-s2) == 1)) and len(s1)< Q):
                 p = lista[i]
                 q = lista[j]
                 

@@ -820,7 +820,7 @@ class varpot:
             self.eliminar(q)
         d = False
         u.improve(list)
-        u.agrupatam(list)
+        u.agrupatam(list, self.Q)
         for q in list:
             self.insertar(q)
         list = self.get(var)
