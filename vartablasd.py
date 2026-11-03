@@ -689,12 +689,12 @@ class varpot:
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
             print("elijo ", v)
-            sleep(5)
+            
             pos = self.reduce(v)
             pos.compile(H=25)
             if pos.contradict:
                 print("contradiccion ")
-                sleep(2)
+                
                 self = self.reduce(-v)
                 self.compile(H=25)
             else:
