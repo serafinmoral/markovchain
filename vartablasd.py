@@ -652,7 +652,7 @@ class varpot:
         for i in range(200):
             old = self.A     
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
-            sleep(1)
+            
               
             self.preset()
             if self.contradict:
