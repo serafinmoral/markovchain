@@ -645,9 +645,9 @@ class varpot:
         print(len(self.orden) - self.A)
         if self.contradict:
             return
-        self.computehyper()
-        self.compileup()
-        self.mejoraup()
+        # self.computehyper()
+        # self.compileup()
+        # self.mejoraup()
         count = 0
         for i in range(200):
             old = self.A     
@@ -665,9 +665,9 @@ class varpot:
             print(len(self.orden) - self.A)
             if self.contradict:
                 break
-            self.computehyper()
-            self.compileup()
-            ok = self.mejoraup()
+            # self.computehyper()
+            # self.compileup()
+            # ok = self.mejoraup()
 
             if new <= old:
                 count+= 1
