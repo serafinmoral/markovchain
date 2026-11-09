@@ -637,11 +637,12 @@ class varpot:
             else:
                 self.parent[v] = -1
 
-    def compile(self, verb=True, H=10):
+    def compile(self, verb=True, H=10, cxt = []):
+        print(cxt)
         self.Q = H
         if self.contradict:
             return
-        self.compiletotal()
+        self.compiletotal(verb=False)
         print(len(self.orden) - self.A)
         if self.contradict:
             return
@@ -657,7 +658,7 @@ class varpot:
             self.preset()
             if self.contradict:
                 break
-            self.compiletotal()
+            self.compiletotal(verb=False)
             new = self.A
             if self.A==-1:
                 return
@@ -681,7 +682,7 @@ class varpot:
             
             
 
-        
+        cxt = []
 
         if not self.A == -1:
             self.preset()
@@ -691,14 +692,19 @@ class varpot:
             print("elijo ", v)
             
             pos = self.reduce(v)
-            pos.compile(H=25)
+            cxt.append(v)
+            pos.compile(H=25,verb=False,cxt = cxt)
             if pos.contradict:
                 print("contradiccion ")
+                cxt.pop()
+                cxt.append(-v)
                 
                 self = self.reduce(-v)
-                self.compile(H=25)
+                self.compile(H=25,verb=False,cxt = cxt)
             else:
               print("solucion encontrada con ", v)
+              cxt.pop()
+              cxt.append(-v)
               pos = self.reduce(-v)
               pos.compile(H=25)  
               if pos.contradict:

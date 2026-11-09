@@ -282,7 +282,7 @@ def agrupatam(lista,Q=25):
             # print("lista, i, j", len(lista), i, j)
             s1 = set(lista[j].listavar)
             s2 = set(lista[i].listavar)
-            if s1 <= s2 or ((len(s1) == len(s2) and (len(s1-s2) == 1)) and len(s1)< Q):
+            if s1 <= s2 or ((len(s1) == len(s2) and (len(s1-s2) == 1)) and len(s1.union(s2))<= Q):
                 p = lista[i]
                 q = lista[j]
                 
