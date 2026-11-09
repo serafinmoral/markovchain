@@ -694,22 +694,25 @@ class varpot:
             pos = self.reduce(v)
             cxt.append(v)
             pos.compile(H=25,verb=False,cxt = cxt)
+            cxt.pop()
             if pos.contradict:
                 print("contradiccion ")
-                cxt.pop()
-                cxt.append(-v)
+                
                 
                 self = self.reduce(-v)
                 self.compile(H=25,verb=False,cxt = cxt)
             else:
               print("solucion encontrada con ", v)
-              cxt.pop()
+    
               cxt.append(-v)
               pos = self.reduce(-v)
-              pos.compile(H=25)  
+              pos.compile(H=25,verb=False,cxt = cxt)
+              cxt.pop()  
               if pos.contradict:
                 self = self.reduce(v)
-                self.compile(H=25)
+                cxt.append(v)
+                self.compile(H=25,verb=False,cxt = cxt)
+                cxt.pop()
               else:
                  print("solucion encontrada con ", -v)
 
