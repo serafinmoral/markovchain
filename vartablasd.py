@@ -682,7 +682,7 @@ class varpot:
             
             
 
-        cxt = []
+        
 
         if not self.A == -1:
             self.preset()
