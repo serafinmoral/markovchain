@@ -839,9 +839,11 @@ class varpot:
         u.agrupatam(list, self.Q)
         for q in list:
             self.insertar(q)
+        if self.contradict:
+            return
         list = self.get(var)
         for p in list:
-            if var in p.det and p.checkdetermi(var):
+            if var in p.det or p.checkdetermi(var):
                 d = True
                 for q in list:
                     self.eliminar(q)
