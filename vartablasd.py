@@ -794,7 +794,7 @@ class varpot:
         if self.contradict:
             return
         K = len(remain) 
-        while remain:
+        while remain and not self.contradict:
             var = self.siguientep(remain)
             remain.remove(var)
             list = self.get(var)
