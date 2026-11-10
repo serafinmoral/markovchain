@@ -666,6 +666,7 @@ class varpot:
               
             self.preset()
             if self.contradict:
+                print("contradiccion despues de preset " , self.A, self.contradict)
                 break
             self.compiletotal(verb=False)
             new = self.A
@@ -674,6 +675,7 @@ class varpot:
 
             print(len(self.orden) - self.A)
             if self.contradict:
+                print("contradiccion despues de compilar " , self.A, self.contradict)
                 break
             # self.computehyper()
             # self.compileup()
