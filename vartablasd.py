@@ -872,6 +872,8 @@ class varpot:
                         for q in list:
                             h = pot.combina(q, inplace=False).borra([var], inplace=False)
                             self.insertar(h)
+                    if self.contradict:
+                        return
                     self.orden.append(var)
                     self.posvar[var] = len(self.orden) - 1
                     self.det[var] = True
