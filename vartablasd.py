@@ -653,6 +653,7 @@ class varpot:
         self.compiletotal(verb=False)
         print(len(self.orden) - self.A)
         if self.contradict:
+            self.A = -1
             print("vuelvo por contradiccion ")
             return
         # self.computehyper()
@@ -676,6 +677,7 @@ class varpot:
             print(len(self.orden) - self.A)
             if self.contradict:
                 print("contradiccion despues de compilar " , self.A, self.contradict)
+                self.A = -1
                 break
             # self.computehyper()
             # self.compileup()
