@@ -607,12 +607,20 @@ class varpot:
                         self.compiled[va][j] = self.compiled[va][j].reduce([v])
             else:
                 if va in self.compiled and var in self.compiled[va].getvars():
-                    self.compiled[va] = self.compiled[va].reduce([v])
+                    q = self.compiled[va].reduce([v])
+                    if q.contradict():
+                        self.anula()
+                    else:
+                        self.compiled[va] = q
                     
             if va in self.wait:
                 for j in range(len(self.wait[va])):
                     if var in self.wait[va][j].getvars():
-                        self.wait[va][j] = self.wait[va][j].reduce([v])
+                        q =  self.wait[va][j].reduce([v])
+                        if q.contradict():
+                            self.anula()
+                        else:
+                            self.wait[va][j] = q
 
         self.det[var] = True
         if self.second:
