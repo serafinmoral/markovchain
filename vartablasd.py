@@ -645,6 +645,7 @@ class varpot:
         self.compiletotal(verb=False)
         print(len(self.orden) - self.A)
         if self.contradict:
+            print("vuelvo por contradiccion ")
             return
         # self.computehyper()
         # self.compileup()
@@ -685,22 +686,27 @@ class varpot:
         
 
         if not self.A == -1:
+            print("No he terminado ")
             self.preset()
             remain = self.svars - set(self.orden)  
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
             print("elijo ", v)
+            if v == 1:
+                print("comprobar ")
             
             pos = self.reduce(v)
             cxt.append(v)
             pos.compile(H=25,verb=False,cxt = cxt)
             cxt.pop()
             if pos.contradict:
-                print("contradiccion ")
+                print("contradiccion + ")
                 
                 
                 self = self.reduce(-v)
+                cxt.append(-v)
                 self.compile(H=25,verb=False,cxt = cxt)
+                cxt.pop()
             else:
               print("solucion encontrada con ", v)
     
@@ -709,6 +715,7 @@ class varpot:
               pos.compile(H=25,verb=False,cxt = cxt)
               cxt.pop()  
               if pos.contradict:
+                print("contradiccion - ")
                 self = self.reduce(v)
                 cxt.append(v)
                 self.compile(H=25,verb=False,cxt = cxt)
@@ -834,7 +841,7 @@ class varpot:
             self.insertar(q)
         list = self.get(var)
         for p in list:
-            if var in p.det or p.checkdetermi(var):
+            if var in p.det and p.checkdetermi(var):
                 d = True
                 for q in list:
                     self.eliminar(q)
