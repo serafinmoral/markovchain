@@ -704,8 +704,7 @@ class varpot:
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
             print("elijo ", v)
-            if v == 1:
-                print("comprobar ")
+         
             
             pos = self.reduce(v)
             cxt.append(v)
@@ -715,7 +714,7 @@ class varpot:
                 print("contradiccion + ")
                 
                 
-                self = self.reduce(-v)
+                self.insertvar(-v)
                 cxt.append(-v)
                 self.compile(H=25,verb=False,cxt = cxt)
                 cxt.pop()
