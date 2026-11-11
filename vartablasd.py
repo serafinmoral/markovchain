@@ -711,7 +711,7 @@ class varpot:
             pos.compile(H=25,verb=False,cxt = cxt)
             cxt.pop()
             if pos.contradict:
-                print("contradiccion + ")
+                print("contradiccion + ", v)
                 
                 
                 self.insertvar(-v)
@@ -726,11 +726,8 @@ class varpot:
               pos.compile(H=25,verb=False,cxt = cxt)
               cxt.pop()  
               if pos.contradict:
-                print("contradiccion - ")
-                self.insertvar(v)
-                cxt.append(v)
-                self.compile(H=25,verb=False,cxt = cxt)
-                cxt.pop()
+                print("contradiccion - " , -v)
+                
               else:
                  print("solucion encontrada con ", -v)
 
