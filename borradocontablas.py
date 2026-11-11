@@ -69,15 +69,17 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
 
         prob.compile()
-        config = prob.markovchainlogic()
-        config = prob.markovchainvar(config)
-        config = prob.markovchainvar(config, i=3)
+        config=[]
+        if not prob.contradict:
+            config = prob.markovchainlogic()
+            config = prob.markovchainvar(config)
+            config = prob.markovchainvar(config, i=3)
 
 
-        prob = prob.prob.copy()
+        
     
         
-        return prob
+        return config
      
 
 

@@ -1221,7 +1221,7 @@ class varpot:
                     return x
 
         
-        miv = min(pos, key=lambda x: self.tadm(x))
+        miv = min(pos, key=lambda x: self.tadm2(x))
         return miv
 
 
@@ -1291,7 +1291,8 @@ class varpot:
     def getpotl(self, l):
         res = []
         for v in l:
-            res.append(self.compiled[v])
+            if v in res.append(self.compiled[v]):
+                res.append(self.compiled[v])
             if v in self.wait:
                 res = res + self.wait[v]
         return res
@@ -1691,6 +1692,31 @@ class varpot:
                 if min(p.getvars()) == v:
                     lista.append(p)
         return lista
+    
+    def tadm2(self, v):
+            mat = 0
+            d = False
+            if v in self.tablas:
+                for q in self.tablas[v]:
+                    if v in q.det:
+                        piv = q
+                        d = True
+                        break
+            
+            if d:
+                sset = set(piv.getvars())
+                return max ([len(sset.union(set(q.getvars()))) for q in self.tablas[v] ])
+                    
+                
+    
+            sset = set()
+            if v in self.tablas:
+                for q in self.tablas[v]:
+                    sset.update(set(q.getvars()))
+                
+    
+            return (len(sset))
+    
 
     def tadm(self, v):
         mat = 0
