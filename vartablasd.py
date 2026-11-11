@@ -1221,7 +1221,7 @@ class varpot:
                     return x
 
         
-        miv = min(pos, key=lambda x: self.tadm2(x))
+        miv = min(pos, key=lambda x: self.tadm(x))
         return miv
 
 
@@ -1291,7 +1291,7 @@ class varpot:
     def getpotl(self, l):
         res = []
         for v in l:
-            if v in res.append(self.compiled[v]):
+            if v in self.compiled:
                 res.append(self.compiled[v])
             if v in self.wait:
                 res = res + self.wait[v]
