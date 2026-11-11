@@ -1221,7 +1221,7 @@ class varpot:
                     return x
 
         
-        miv = min(pos, key=lambda x: self.tadm(x))
+        miv = min(pos, key=lambda x: self.tadm2(x))
         return miv
 
 
@@ -1694,7 +1694,6 @@ class varpot:
         return lista
     
     def tadm2(self, v):
-            mat = 0
             d = False
             if v in self.tablas:
                 for q in self.tablas[v]:
