@@ -70,10 +70,10 @@ def main(prob, Previo=True, Mejora=False): #EDM
 
         prob.compile()
         config=[]
-        if not prob.contradict:
-            config = prob.markovchainlogic()
-            config = prob.markovchainvar(config)
-            config = prob.markovchainvar(config, i=3)
+        # if not prob.contradict:
+        #     config = prob.markovchainlogic()
+        #     config = prob.markovchainvar(config)
+        #     config = prob.markovchainvar(config, i=3)
 
 
         
