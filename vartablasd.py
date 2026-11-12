@@ -309,12 +309,12 @@ class varpot:
             K = 0
         else:
             K = self.A
-        for i in range(K, len(self.orden)):
+        for i in range(len(self.orden),K-1,-1):
             v = self.orden[i]
             if v in self.compiled:
                 listi.append(self.compiled[v])
                 if self.det[v] and len(self.compiled[v].getvars()) <= L and v in self.compiled[v].getvars():
-                    listd.append((v, self.compiled[v]))
+                    self.sd(self.compiled[v],v,i)
             if v in self.wait:
                 for p in self.wait[v]:
                     listi.append(p)
@@ -326,14 +326,28 @@ class varpot:
             del self.det[v]
 
         for p in listi:
-            for (v, q) in listd:
-                if not(p == q) and set(q.getvars()) <= set(p.getvars()):
-                    p = p.combina(q).borra([v])
-                    print("reduzco ", len(p.getvars()))
             self.insertar(p)
 
         del self.orden[K:]
         self.A = -1
+
+    def sd(self,p,v,i):
+        sr = set(p.getvars())
+        for j in range(i+1,-1,-1):
+            w = self.orden[i]
+            if w in self.compiled:
+                q = self.compiled[w]
+                if sr <= set(q.getvars()) :
+                    self.compiled[j] = q.combina(p).borra([v],inplace=False)
+            if w in self.wait:
+                l = []
+                for q in self.wait[w]:
+                    if sr <= set(q.getvars()) :
+                         l.append(q.combina(p).borra([v],inplace=False))
+                    else:
+                        l.append(q)
+                self.wait[w] = l
+
         
     def anula(self):
         self.tablas = dict()
