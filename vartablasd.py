@@ -332,7 +332,7 @@ class varpot:
 
     def sd(self,p,v,i):
         sr = set(p.getvars())
-        for j in range(i+1,-1,-1):
+        for j in range(i-1,-1,-1):
             w = self.orden[j]
             if w in self.compiled:
                 q = self.compiled[w]
