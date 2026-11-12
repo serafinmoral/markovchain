@@ -628,6 +628,7 @@ class varpot:
                     
             if va in self.wait:
                 for j in range(len(self.wait[va])):
+                    print(va,j)
                     if var in self.wait[va][j].getvars():
                         q =  self.wait[va][j].reduce([v])
                         if q.contradict():
@@ -663,7 +664,7 @@ class varpot:
         self.Q = H
         if self.contradict:
             return
-        self.compiletotal(verb=True)
+        self.compiletotal(verb=False)
         print(len(self.orden) - self.A)
         if self.contradict:
             self.A = -1
