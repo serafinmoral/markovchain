@@ -628,11 +628,11 @@ class varpot:
                     
             if va in self.wait:
                 for j in range(len(self.wait[va])):
-                    print(va,j)
                     if var in self.wait[va][j].getvars():
                         q =  self.wait[va][j].reduce([v])
                         if q.contradict():
                             self.anula()
+                            return
                         else:
                             self.wait[va][j] = q
 
