@@ -304,7 +304,6 @@ class varpot:
         if self.A == -1:
             return
         listi = []
-        listd = []
         if total:
             K = 0
         else:
@@ -334,11 +333,11 @@ class varpot:
     def sd(self,p,v,i):
         sr = set(p.getvars())
         for j in range(i+1,-1,-1):
-            w = self.orden[i]
+            w = self.orden[j]
             if w in self.compiled:
                 q = self.compiled[w]
                 if sr <= set(q.getvars()) :
-                    self.compiled[j] = q.combina(p).borra([v],inplace=False)
+                    self.compiled[w] = q.combina(p).borra([v],inplace=False)
             if w in self.wait:
                 l = []
                 for q in self.wait[w]:
@@ -664,7 +663,7 @@ class varpot:
         self.Q = H
         if self.contradict:
             return
-        self.compiletotal(verb=False)
+        self.compiletotal(verb=True)
         print(len(self.orden) - self.A)
         if self.contradict:
             self.A = -1
