@@ -309,7 +309,7 @@ class varpot:
             K = 0
         else:
             K = self.A
-        for i in range(len(self.orden),K-1,-1):
+        for i in range(len(self.orden)-1,K-1,-1):
             v = self.orden[i]
             if v in self.compiled:
                 listi.append(self.compiled[v])
