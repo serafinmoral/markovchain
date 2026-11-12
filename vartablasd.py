@@ -721,7 +721,7 @@ class varpot:
 
         if not self.A == -1:
             print("No he terminado ")
-            self.preset()
+            self.preset(partial=True)
             remain = self.svars - set(self.orden)  
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
@@ -742,7 +742,7 @@ class varpot:
                 cxt.pop()
             else:
               print("solucion encontrada con ", cxt)
-              sleep(5)
+            #   sleep(5)
               cxt.append(-v)
               pos = self.reduce(-v)
               pos.compile(H=25,verb=False,cxt = cxt)
@@ -752,7 +752,7 @@ class varpot:
                 
               else:
                  print("solucion encontrada con ", cxt)
-                 sleep(5)
+                #  sleep(5)
 
 
     def compilesecond(self):
