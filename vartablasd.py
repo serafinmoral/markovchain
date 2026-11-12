@@ -304,27 +304,32 @@ class varpot:
         if self.A == -1:
             return
         listi = []
+        listd = []
         if total:
             K = 0
         else:
             K = self.A
-        for i in range(len(self.orden)-1,K-1,-1):
+        for i in range(K, len(self.orden)):
             v = self.orden[i]
             if v in self.compiled:
                 listi.append(self.compiled[v])
                 if self.det[v] and len(self.compiled[v].getvars()) <= L and v in self.compiled[v].getvars():
-                    self.sd(self.compiled[v],v,i)
+                    listd.append((v, self.compiled[v]))
             if v in self.wait:
                 for p in self.wait[v]:
                     listi.append(p)
                 del self.wait[v]
-            
+
             if v in self.compiled:
                 del self.compiled[v]
             del self.posvar[v]
             del self.det[v]
 
         for p in listi:
+            for (v, q) in listd:
+                if not(p == q) and set(q.getvars()) <= set(p.getvars()):
+                    p = p.combina(q).borra([v])
+                    print("reduzco ", len(p.getvars()))
             self.insertar(p)
 
         del self.orden[K:]
@@ -338,11 +343,14 @@ class varpot:
                 q = self.compiled[w]
                 if sr <= set(q.getvars()) :
                     self.compiled[w] = q.combina(p).borra([v],inplace=False)
+                    print("reduciendo c ", len(self.compiled[w].getvars()))
             if w in self.wait:
                 l = []
                 for q in self.wait[w]:
                     if sr <= set(q.getvars()) :
-                         l.append(q.combina(p).borra([v],inplace=False))
+                         h = q.combina(p).borra([v],inplace=False)
+                         l.append(h)
+                         print("reduciendo w ", len(h.getvars()))
                     else:
                         l.append(q)
                 self.wait[w] = l
