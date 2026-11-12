@@ -687,7 +687,7 @@ class varpot:
             print(">>>>>>>>>>>>>>>Q= ", self.Q)
             
               
-            self.preset()
+            self.preset(total=False)
             if self.contradict:
                 print("contradiccion despues de preset " , self.A, self.contradict)
                 break
@@ -721,7 +721,7 @@ class varpot:
 
         if not self.A == -1:
             print("No he terminado ")
-            self.preset(partial=True)
+            self.preset(total = False)
             remain = self.svars - set(self.orden)  
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
