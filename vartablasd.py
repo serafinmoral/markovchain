@@ -741,8 +741,8 @@ class varpot:
                 self.compile(H=25,verb=False,cxt = cxt)
                 cxt.pop()
             else:
-              print("solucion encontrada con ", v)
-    
+              print("solucion encontrada con ", cxt)
+              sleep(5)
               cxt.append(-v)
               pos = self.reduce(-v)
               pos.compile(H=25,verb=False,cxt = cxt)
@@ -751,7 +751,8 @@ class varpot:
                 print("contradiccion - " , -v)
                 
               else:
-                 print("solucion encontrada con ", -v)
+                 print("solucion encontrada con ", cxt)
+                 sleep(5)
 
 
     def compilesecond(self):
