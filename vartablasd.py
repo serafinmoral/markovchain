@@ -742,7 +742,7 @@ class varpot:
                 cxt.pop()
             else:
               print("solucion encontrada con ", cxt)
-            #   sleep(5)
+              sleep(5)
               cxt.append(-v)
               pos = self.reduce(-v)
               pos.compile(H=25,verb=False,cxt = cxt)
@@ -752,7 +752,7 @@ class varpot:
                 
               else:
                  print("solucion encontrada con ", cxt)
-                #  sleep(5)
+                 sleep(5)
 
 
     def compilesecond(self):
