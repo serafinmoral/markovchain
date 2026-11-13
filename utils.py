@@ -201,7 +201,7 @@ def dist(l1,l2,c):
     return 2**len(su) - 2**len(s1) - 2**len(s2)
 
 def combinasize(lista,pivote,Q):
-    c = pivote.getvars()
+    c = set(pivote.getvars())
     i=0
     while i <len(lista)-1:
             
@@ -210,7 +210,7 @@ def combinasize(lista,pivote,Q):
                 if not j==i:
                     p = lista[i]
                     q = lista[j]
-                    if dist(p.getvars(),q.getvars(),c)<= 0 and len(set(p.getvars()).union(set(q.getvars())) )<= Q:
+                    if dist(p.getvars(),q.getvars(),c)<= 0 and len(set(p.getvars()).union(set(q.getvars())).union(c) )<= Q:
                         p = lista[i]
                         q = lista[j]
                         t = p.combina(q,inplace=False)
