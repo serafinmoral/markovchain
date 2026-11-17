@@ -969,7 +969,7 @@ class varpot:
         for p in list:
             self.eliminar(p)
         if size > self.Q and wait:
-            list = u.agrupal(list,self.Q)
+            # list = u.agrupal(list,self.Q)
             list2 = self.moreinforma(list)
             if list2:
                 if self.A == -1:
