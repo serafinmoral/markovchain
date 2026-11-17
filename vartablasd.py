@@ -711,9 +711,9 @@ class varpot:
                 count+= 1
             else:
                 count = 0
-            if count == 1 and self.Q == 25:
+            if count == 2 and self.Q == 25:
                 break
-            if count == 4 and self.Q<25:
+            if count == 2 and self.Q<25:
                 count = 0
                 self.Q+= 1
             
@@ -947,18 +947,35 @@ class varpot:
                 lista2.remove(p)
                 lista.append(p)
         return lista2
+
+    
         
-    def minil(self, lista, var):
-        wl = lista.copy()
-        while wl:
-            l2 = self.moreinforma(wl)
+    def agrupa(self,lista):
+        lista2 = lista.copy()
+        res = []
+
+
+        while lista2:
+            lista3 = self.moreinforma(lista2)
             q = nodoTabla([])
-            for p in wl:
+            for p in lista2:
                 q = q.combina(p)
-            if var in q.getvars():
-                h = q.borra([var], inplace=False)
-                self.insertar(h)
-            wl = l2
+            res.append(q)
+            lista2 = lista3
+
+        return res
+
+    def checkdet(self,lista,var):
+
+        for i in range(len(lista)):
+            p = lista[i]
+            if var in p.det or p.checkdetermi(var):
+                q = lista[0]
+                lista[0] = p
+                lista[i] = q
+                return True
+        return False
+
 
     def compilevar(self, var, nondet=False, wait=False, test=True, verb=True):
         list = self.get(var)
@@ -969,29 +986,25 @@ class varpot:
         for p in list:
             self.eliminar(p)
         if size > self.Q and wait:
-            # list = u.agrupal(list,self.Q)
-            list2 = self.moreinforma(list)
-            if list2:
+            list = self.agrupa(list,self.Q)
+            ok = self.checkdet(list,var)
+            
+            if len(list)>1:
                 if self.A == -1:
                     self.A = len(self.orden)
                 if verb:
-                    print("reservando variable ********************* ", var, len(list2))
-                self.wait[var] = list2
+                    print("reservando variable ********************* ", var, len(list)-1)
+                self.wait[var] = list[1:]
                 for q in self.wait[var]:
                     self.insertar(q.borra([var],inplace = False))
 
-        size = computesize(list)
+        
         if verb:
             print(size, len(list))
         if size <= self.Q and list:
-            if len(list) == 1:
-                p = list[0]
-            else:
-                p = nodoTabla([])
-                for q in list:
-                    p = p.combina(q)
+            p = list[0]
             
-            if var in p.det or p.checkdetermi(var):
+            if ok:
                 self.borradetl(var, p, list, verb=verb)
             elif nondet:
                 if test and self.A == -1:

@@ -306,21 +306,8 @@ def agrupatam(lista,Q=25):
     lista.reverse()
 
 def agrupal(lista, Q):
-    listac = lista.copy()
-    res = []
-    for p in lista:
-        # print(p.listavar)
-        listat = listac.copy()
-        listat.remove(p)
-        h = p.copia()
-        while listat:
-            q = min(listat, key=lambda x: len(set(x.listavar).union(set(h.listavar))))
-            if len(set(q.listavar).union(set(h.listavar))) <=Q:
-                h = h.combina(q)
-                listat.remove(q)
-            else:
-                res.append(h)
-                break
+    res = lista.copy()
+
                 
       
     i=0
