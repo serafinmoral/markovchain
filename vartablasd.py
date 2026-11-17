@@ -735,7 +735,7 @@ class varpot:
             
             pos = self.reduce(v)
             cxt.append(v)
-            pos.compile(H=25,verb=False,cxt = cxt)
+            pos.compile(H=20,verb=False,cxt = cxt)
             cxt.pop()
             if pos.contradict:
                 print("contradiccion + ", v)
