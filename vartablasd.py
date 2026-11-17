@@ -711,9 +711,9 @@ class varpot:
                 count+= 1
             else:
                 count = 0
-            if count == 2 and self.Q == 20:
+            if count == 3 and self.Q == 25:
                 break
-            if count == 2 and self.Q<20:
+            if count == 4 and self.Q<25:
                 count = 0
                 self.Q+= 1
             
@@ -735,7 +735,7 @@ class varpot:
             
             pos = self.reduce(v)
             cxt.append(v)
-            pos.compile(H=20,verb=False,cxt = cxt)
+            pos.compile(H=25,verb=False,cxt = cxt)
             cxt.pop()
             if pos.contradict:
                 print("contradiccion + ", v)
@@ -743,14 +743,14 @@ class varpot:
                 
                 self.insertvar(-v)
                 cxt.append(-v)
-                self.compile(H=20,verb=False,cxt = cxt)
+                self.compile(H=25,verb=False,cxt = cxt)
                 cxt.pop()
             else:
               print("solucion encontrada con ", cxt)
             #   sleep(5)
               cxt.append(-v)
               pos = self.reduce(-v)
-              pos.compile(H=20,verb=False,cxt = cxt)
+              pos.compile(H=25,verb=False,cxt = cxt)
               cxt.pop()  
               if pos.contradict:
                 print("contradiccion - " , -v)
