@@ -711,9 +711,9 @@ class varpot:
                 count+= 1
             else:
                 count = 0
-            if count == 2 and self.Q == 25:
+            if count == 2 and self.Q == 20:
                 break
-            if count == 2 and self.Q<25:
+            if count == 2 and self.Q<20:
                 count = 0
                 self.Q+= 1
             
@@ -960,7 +960,7 @@ class varpot:
                 self.insertar(h)
             wl = l2
 
-    def compilevar(self, var, nondet=False, wait=False, test=False, verb=True):
+    def compilevar(self, var, nondet=False, wait=False, test=True, verb=True):
         list = self.get(var)
         size = computesize(list)
         su = False
