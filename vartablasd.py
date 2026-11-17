@@ -674,7 +674,7 @@ class varpot:
         self.Q = H
         if self.contradict:
             return
-        self.compiletotal(verb=True)
+        self.compiletotal(verb=False)
         print(len(self.orden) - self.A)
         if self.contradict:
             self.A = -1
