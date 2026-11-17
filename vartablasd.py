@@ -743,7 +743,7 @@ class varpot:
                 
                 self.insertvar(-v)
                 cxt.append(-v)
-                self.compile(H=25,verb=False,cxt = cxt)
+                self.compile(H=20,verb=False,cxt = cxt)
                 cxt.pop()
             else:
               print("solucion encontrada con ", cxt)
