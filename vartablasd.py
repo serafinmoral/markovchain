@@ -331,6 +331,8 @@ class varpot:
                     p = p.combina(q).borra([v])
                     print("reduzco ", len(p.getvars()))
             self.insertar(p)
+            if self.contradict:
+                return
 
         del self.orden[K:]
         self.A = -1
@@ -672,7 +674,7 @@ class varpot:
         self.Q = H
         if self.contradict:
             return
-        self.compiletotal(verb=False)
+        self.compiletotal(verb=True)
         print(len(self.orden) - self.A)
         if self.contradict:
             self.A = -1
@@ -722,6 +724,9 @@ class varpot:
         if not self.A == -1:
             print("No he terminado ")
             self.preset(total = False)
+            if self.contradict:
+                print("contradiccion después de preset ", v)
+                return 
             remain = self.svars - set(self.orden)  
             remain = remain - set(map(abs, self.unit))
             v = self.choose(remain)
@@ -964,6 +969,7 @@ class varpot:
         for p in list:
             self.eliminar(p)
         if size > self.Q and wait:
+            list = u.agrupal(list,self.Q)
             list2 = self.moreinforma(list)
             if list2:
                 if self.A == -1:
@@ -971,6 +977,8 @@ class varpot:
                 if verb:
                     print("reservando variable ********************* ", var, len(list2))
                 self.wait[var] = list2
+                for q in self.wait[var]:
+                    self.insertar(q.borra([var],inplace = False))
 
         size = computesize(list)
         if verb:
@@ -1247,7 +1255,7 @@ class varpot:
 
     def choose(self, pos):
         
-        miv = max(pos, key=lambda x: self.tadm(x))
+        miv = max(pos, key=lambda x: self.tadm3(x))
         return miv
     
 
@@ -1348,6 +1356,9 @@ class varpot:
 
         if self.compiled:
             res.compiled = self.compiled.copy()
+
+        if self.wait:
+                    res.wait = self.wait.copy()
         
         return res
 
@@ -1735,6 +1746,15 @@ class varpot:
                 
     
             return (len(sset))
+
+    def tadm3(self, v):
+        res = 0.0
+        if v in self.tablas:
+            for q in self.tablas[v]:
+                res += 1/2**len(q.getvars())
+            
+
+        return (res)
     
 
     def tadm(self, v):

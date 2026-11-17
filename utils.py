@@ -311,27 +311,21 @@ def agrupal(lista, Q):
     for p in lista:
         # print(p.listavar)
         listat = listac.copy()
-        completo = True
         listat.remove(p)
         h = p.copia()
         while listat:
             q = min(listat, key=lambda x: len(set(x.listavar).union(set(h.listavar))))
             if len(set(q.listavar).union(set(h.listavar))) <=Q:
-                h.combina(q,inplace=True)
+                h = h.combina(q)
                 listat.remove(q)
             else:
                 res.append(h)
-                completo= False
                 break
-        if completo:
-            res.append(h)
-            break
+                
+      
     i=0
     res.sort(key = lambda x : - len(x.listavar) )
-    # for x in res:
-    #     print (x.listavar)
-    #     sleep(3)
-
+   
     while i <len(res)-1:
         
         j = i+1
