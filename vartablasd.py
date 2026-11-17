@@ -986,7 +986,7 @@ class varpot:
         for p in list:
             self.eliminar(p)
         if size > self.Q and wait:
-            list = self.agrupa(list,self.Q)
+            list = self.agrupa(list)
             ok = self.checkdet(list,var)
             
             if len(list)>1:
