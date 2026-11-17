@@ -250,7 +250,9 @@ def combinaincluidas(lista, K=0, Q=25):
         j = i+1
         while j < len(lista):
             # print("lista, i, j", len(lista), i, j)
-            if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K and len(set(lista[j].getvars()).union(set(lista[i].getvars())))<=Q:
+            # if len(set(lista[j].getvars()) - set(lista[i].getvars()))<=K and len(set(lista[j].getvars()).union(set(lista[i].getvars())))<=Q:
+            if len(set(lista[j].getvars()).union(set(lista[i].getvars())))<=Q:
+
                 p = lista[i]
                 q = lista[j]
                 t = p.combina(q)

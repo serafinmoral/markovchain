@@ -674,7 +674,7 @@ class varpot:
         self.Q = H
         if self.contradict:
             return
-        self.compiletotal(verb=False)
+        self.compiletotal(verb=True)
         print(len(self.orden) - self.A)
         if self.contradict:
             self.A = -1
@@ -876,7 +876,7 @@ class varpot:
         for q in list:
             self.insertar(q)
         if self.contradict:
-            return
+            return True
         list = self.get(var)
         for p in list:
             if var in p.det or p.checkdetermi(var):
@@ -986,20 +986,10 @@ class varpot:
         for p in list:
             self.eliminar(p)
         
-        list = self.agrupa(list)
-        ok = self.checkdet(list,var)
         
-        
-        
-
-        
-
         p = list[0]
-        
-        if ok:
-            self.borradetl(var, p, list, verb=verb)
-        elif nondet:
-            if test and self.A == -1:
+        ok = False
+        if test and self.A == -1:
                 if verb:
                     print("Comprobando ")
                 r = p.computedet(var)
@@ -1023,6 +1013,8 @@ class varpot:
                 elif verb:
                     print("NOO exito ")
 
+
+        if not ok:
             h = p.borra([var], inplace=False)
             self.orden.append(var)
             self.posvar[var] = len(self.orden) - 1
@@ -1036,14 +1028,9 @@ class varpot:
             if verb:
                 print("borrando no determinismo")
             self.insertar(h)
-        if not ok:
-            if len(list)>1:
-                if self.A == -1:
-                    self.A = len(self.orden)
-                if verb:
-                    print("reservando variable ********************* ", var, len(list)-1)
-                self.wait[var] = list[1:]
-                for q in self.wait[var]:
+        
+            self.wait[var] = list[1:]
+            for q in self.wait[var]:
                     self.insertar(q.borra([var],inplace = False))
         
             
@@ -1058,16 +1045,27 @@ class varpot:
         pot = p.minimizadep(var)
         
         self.compiled[var] = pot
-        if verb:
+        if not pot == p and verb:
             print(p.getvars(), pot.getvars())
-        if not pot == p:
-            u.combinasize(list, pot, self.Q)
-            for q in list:
-                h = pot.combina(q, inplace=False).borra([var], inplace=False)
+        
+        u.combinasize(list, pot, self.Q)
+        l = []
+        for q in list:
+                if len(set(pot.getvars()).union(set(q.getvars()))) <= self.Q:  
+                    h = pot.combina(q, inplace=False).borra([var], inplace=False)
+                else:
+                    h = q.borra([var], inplace=False)
+                    if self.A == -1:
+                        self.A = len(self.orden)
+                    l.append(q)     
                 self.insertar(h)
-        else:
+        self.wait[var] = l
+
+                
+        if not list or not pot==p:
             h = p.borra([var], inplace=False)
             self.insertar(h)
+         
 
     def recompileupdet(self, K=6, verb=True):
         n = len(self.orden)
