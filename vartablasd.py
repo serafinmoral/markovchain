@@ -960,7 +960,7 @@ class varpot:
                 self.insertar(h)
             wl = l2
 
-    def compilevar(self, var, nondet=False, wait=False, test=True, verb=True):
+    def compilevar(self, var, nondet=False, wait=False, test=False, verb=True):
         list = self.get(var)
         size = computesize(list)
         su = False
@@ -994,7 +994,7 @@ class varpot:
             if var in p.det or p.checkdetermi(var):
                 self.borradetl(var, p, list, verb=verb)
             elif nondet:
-                if test:
+                if test and self.A == -1:
                     if verb:
                         print("Comprobando ")
                     r = p.computedet(var)
