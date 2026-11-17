@@ -985,10 +985,58 @@ class varpot:
             return False
         for p in list:
             self.eliminar(p)
-        if size > self.Q and wait:
-            list = self.agrupa(list)
-            ok = self.checkdet(list,var)
-            
+        
+        list = self.agrupa(list)
+        ok = self.checkdet(list,var)
+        
+        
+        
+
+        
+
+        p = list[0]
+        
+        if ok:
+            self.borradetl(var, p, list, verb=verb)
+        elif nondet:
+            if test and self.A == -1:
+                if verb:
+                    print("Comprobando ")
+                r = p.computedet(var)
+                if verb:
+                    r_sum = r.tabla.sum().item() if isinstance(r.tabla, torch.Tensor) else int(r.tabla)
+                    print("No determinismo ", r_sum / 2**(len(r.getvars())))
+                nuevo = self.copia()
+                nuevo.insertar(r)
+                nuevo.orden.append(var)
+                nuevo.posvar[var] = len(self.orden) - 1
+                nuevo.det[var] = False
+                nuevo.Q = max(self.Q, 25)
+                nuevo.compiletotal(verb=False, test=False)
+                if nuevo.contradict:
+                    if verb:
+                        print("SII exito ")
+                    p = p.combina(r.neg())
+                    ok = True
+                    self.borradetl(var, p, list, verb=verb)
+                    return
+                elif verb:
+                    print("NOO exito ")
+
+            h = p.borra([var], inplace=False)
+            self.orden.append(var)
+            self.posvar[var] = len(self.orden) - 1
+            self.det[var] = False
+            old = len(p.getvars())
+            p = p.minimiza(h)
+            new = len(p.getvars())
+            if new < old and verb:
+                print("minimizo *********--------------->", new, old)
+            self.compiled[var] = p
+            if verb:
+                print("borrando no determinismo")
+            self.insertar(h)
+        if not ok:
             if len(list)>1:
                 if self.A == -1:
                     self.A = len(self.orden)
@@ -997,63 +1045,9 @@ class varpot:
                 self.wait[var] = list[1:]
                 for q in self.wait[var]:
                     self.insertar(q.borra([var],inplace = False))
-
         
-        if verb:
-            print(size, len(list))
-        if size <= self.Q and list:
-            p = list[0]
             
-            if ok:
-                self.borradetl(var, p, list, verb=verb)
-            elif nondet:
-                if test and self.A == -1:
-                    if verb:
-                        print("Comprobando ")
-                    r = p.computedet(var)
-                    if verb:
-                        r_sum = r.tabla.sum().item() if isinstance(r.tabla, torch.Tensor) else int(r.tabla)
-                        print("No determinismo ", r_sum / 2**(len(r.getvars())))
-                    nuevo = self.copia()
-                    nuevo.insertar(r)
-                    nuevo.orden.append(var)
-                    nuevo.posvar[var] = len(self.orden) - 1
-                    nuevo.det[var] = False
-                    nuevo.Q = max(self.Q, 25)
-                    nuevo.compiletotal(verb=False, test=False)
-                    if nuevo.contradict:
-                        if verb:
-                            print("SII exito ")
-                        p = p.combina(r.neg())
-                        self.borradetl(var, p, list, verb=verb)
-                        return
-                    elif verb:
-                        print("NOO exito ")
-
-                h = p.borra([var], inplace=False)
-                self.orden.append(var)
-                self.posvar[var] = len(self.orden) - 1
-                self.det[var] = False
-                old = len(p.getvars())
-                p = p.minimiza(h)
-                new = len(p.getvars())
-                if new < old and verb:
-                    print("minimizo *********--------------->", new, old)
-                self.compiled[var] = p
-                if verb:
-                    print("borrando no determinismo")
-                self.insertar(h)
-                
-        elif wait:
-            if self.A == -1:
-                self.A = len(self.orden)
-            if verb:
-                print("reservando variable ------------------->", len(list))
-            self.wait[var] = list
-            self.compiled[var] = nodoTabla([])
-            self.orden.append(var)
-            self.posvar[var] = len(self.orden) - 1
-            self.det[var] = False
+        
 
         return su
 
