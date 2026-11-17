@@ -725,7 +725,7 @@ class varpot:
             print("No he terminado ")
             self.preset(total = False)
             if self.contradict:
-                print("contradiccion después de preset ", v)
+                print("contradiccion después de preset ")
                 return 
             remain = self.svars - set(self.orden)  
             remain = remain - set(map(abs, self.unit))
@@ -994,7 +994,7 @@ class varpot:
             if var in p.det or p.checkdetermi(var):
                 self.borradetl(var, p, list, verb=verb)
             elif nondet:
-                if test and self.A == -1:
+                if test:
                     if verb:
                         print("Comprobando ")
                     r = p.computedet(var)
