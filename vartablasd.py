@@ -1028,7 +1028,8 @@ class varpot:
             if verb:
                 print("borrando no determinismo")
             self.insertar(h)
-        
+            if len(list)>1 and self.A == -1:
+                self.A = len(self.orden)
             self.wait[var] = list[1:]
             for q in self.wait[var]:
                     self.insertar(q.borra([var],inplace = False))
