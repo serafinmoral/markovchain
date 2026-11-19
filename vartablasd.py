@@ -1024,6 +1024,7 @@ class varpot:
                 if verb:
                     print("borrando no determinismo")
                 self.insertar(h)
+                u.agrupa(list2, self.Q)
                 for q in list2:
                     h = q.borra([var],inplace=False)
                     self.insertar(h)

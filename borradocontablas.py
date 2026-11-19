@@ -243,7 +243,7 @@ def borradocontablas(archivolee,  archivogenera="salida.csv",Q=30):
 
     
 # computetreewidhts("ListaCNF_Experimento.txt")
-# borradocontablas("entrada.txt","salida",Q=30)
+borradocontablas("entrada.txt","salida",Q=30)
 # borradofacil("entrada",[5,10,15,20,25],[False],[False],[True],"resultado.txt")
-experimentUAI("entrada2.txt","salidauai")
+# experimentUAI("entrada2.txt","salidauai")
 

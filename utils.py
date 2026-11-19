@@ -230,6 +230,37 @@ def combinasize(lista,pivote,Q):
             
             i+=1
 
+
+def agrupa(lista,Q):
+
+    i=0
+    while i <len(lista)-1:
+            
+            j = i+1
+            while j < len(lista) and i < len(lista):
+                if not j==i:
+                    p = lista[i]
+                    q = lista[j]
+                    if  len(set(p.getvars()).union(set(q.getvars())) )<= Q:
+                        p = lista[i]
+                        q = lista[j]
+                        t = p.combina(q,inplace=False)
+                        # if K==0:
+                        #     print("No debería")
+                        #     sleep(4)
+                        
+                        lista[i] = t
+                        
+                        lista.remove(q)
+                        j=0
+                        
+                    else:
+                        j+=1
+                else:
+                    j+=1
+            
+            i+=1
+
 def improve(lista):
     n = len(lista)
     for i in range(n):
