@@ -51,7 +51,57 @@ def leeArchivoGlobal(Archivo):
     return infor, nvar, nclaus
    
     
+def leeficheroUAI(Archivo):
+    lista = list()
+    listadatos = list()
+    setevid = set()
+    archivo=""
+    contarClaus=0
+    reader=open(Archivo,"r") 
+    reader.readline()
+    reader.readline()
+    reader.readline()
+    numFactor = int(reader.readline())
+    for i in range(numFactor):
+        cadena = reader.readline()
+        nodoAdd = nodoTabla([int(i)+1 for i in cadena.split()[1:]])
+        lista.append(nodoAdd)
     
+
+    if not 'or_chain' in Archivo and not 'Promedus' in Archivo:
+        for l in lista:
+            reader.readline()
+            lee = int(reader.readline()) // 2
+            lvars = l.listavar
+            datos = []
+            for x in range(lee):
+                datos.extend(map(float, reader.readline().split()))
+            l.tabla = torch.tensor(datos, dtype=torch.float32).reshape((2,) * len(lvars))
+    elif 'or_chain' in Archivo:
+        for l in lista:
+            datosb = reader.readline().split()
+
+            while not datosb:
+                datosb = reader.readline().split()
+
+            datos = torch.tensor(list(map(float, datosb[1:])), dtype=torch.float32)
+            l.tabla = datos.reshape((2,) * len(l.listavar))
+    elif 'Promedus' in Archivo:
+        reader.readline()
+        for l in lista:
+            k = int(reader.readline())
+            datosb = reader.readline().split()
+            datos = torch.tensor(list(map(float, datosb)), dtype=torch.float32)
+
+            l.tabla = datos.reshape((2,) * len(l.listavar))
+
+
+      
+    
+    setevid = leeArchivoEvid(Archivo+".evid")
+    return (lista, setevid)
+
+ 
 
 
 
@@ -131,7 +181,28 @@ def computetreewidhts(archivolee):
     writer.close()
     reader.close()
 
+def experimentUAI(archivolee,  archivogenera="salida.csv"):
+    reader=open(archivolee,"r")
+    writer=open(archivogenera,"w")
+    writer.write("Problema;Variable;Claúsulas;Q;MejoraLocal;Previo;PartirVars;TLectura;TBúsqueda;TTotal;SAT\n")
+    ttotal = 0
+             # i=0
+    for linea in reader:
+                 # i=i+1
+        linea = linea.rstrip()
+        if len(linea)>0:
+            nombre=linea.strip()
+            print(nombre)     
+            t1 = time()
+            (tablas,evi) = leeficheroUAI(nombre)
+            prob = varpot()
+            prob.computefromBayes(tablas,evi)
+            res  = main(prob)
+            t2 = time()
+            print(nombre,t2-t1)
 
+
+                     
 
 def borradocontablas(archivolee,  archivogenera="salida.csv",Q=30):
         
@@ -172,7 +243,7 @@ def borradocontablas(archivolee,  archivogenera="salida.csv",Q=30):
 
     
 # computetreewidhts("ListaCNF_Experimento.txt")
-borradocontablas("entrada.txt","salida",Q=30)
+# borradocontablas("entrada.txt","salida",Q=30)
 # borradofacil("entrada",[5,10,15,20,25],[False],[False],[True],"resultado.txt")
-# experimentimportance("entrada",20,"outimportance.txt")
+experimentUAI("entrada2.txt","salidauai")
 
