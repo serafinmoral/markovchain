@@ -1268,7 +1268,7 @@ class varpot:
 
     def choose(self, pos):
         
-        miv = max(pos, key=lambda x: self.tadm(x))
+        miv = max(pos, key=lambda x: self.tadm3(x))
         return miv
     
 
@@ -1781,6 +1781,16 @@ class varpot:
                 mat += - 2**(len(q.getvars()))
 
         return (mat + 2**(len(sset) - 2))
+
+    def tadm3(self, v):
+        if not v in self.tablas:
+            return 0
+        else:
+            st = set()
+            for q in self.tablas[v]:
+                st.update(set(q.getvars()))
+            return len(st)
+        
 
     def tadref(self, pot, list):
         svars = set(pot.getvars())
