@@ -1788,7 +1788,7 @@ class varpot:
         x = 0.0
         
         for q in self.tablas[v]:
-            x+= len(q.getvars())
+            x+= 1/len(q.getvars())
         return x
                 
 
