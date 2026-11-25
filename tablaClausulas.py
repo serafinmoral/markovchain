@@ -435,6 +435,18 @@ class nodoTabla:
             z1 = x1 / (x0 + x1)
             x = (-z0 * math.log(z0) - z1 * math.log(z1))
         return x
+
+    def prob(self, v):
+        (x0, x1) = self.cuenta(v)
+        
+        if x0 == 0 and x1 == 0:
+            return (0.0,0.0)
+        else:
+            z0 = x0 / (x0 + x1)
+            z1 = x1 / (x0 + x1)
+            return (z0,z1)
+            
+        
     
     def mincuenta(self, v):
         (x0, x1) = self.cuenta(v)

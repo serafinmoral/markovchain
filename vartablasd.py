@@ -1784,12 +1784,22 @@ class varpot:
 
     def tadm3(self, v):
         if not v in self.tablas:
-            return 0
+            return -3
         else:
-            st = set()
+            p0 = 0.0
+            p1 = 0.0
             for q in self.tablas[v]:
-                st.update(set(q.getvars()))
-            return len(st)
+                (z0,z1) = q.prob()
+                p0*= z0
+                p1*= z1
+            if z0==0.0 and z1==0.0:
+                return 0
+            p0 = z0/(z0+z1)
+            p1= z1/(z0+z1)
+            x = (p0 * math.log(p0) + p1 * math.log(p1))
+            return x
+        
+                        
         
 
     def tadref(self, pot, list):
