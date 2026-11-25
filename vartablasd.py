@@ -1789,7 +1789,7 @@ class varpot:
             p0 = 0.0
             p1 = 0.0
             for q in self.tablas[v]:
-                (z0,z1) = q.prob()
+                (z0,z1) = q.prob(v)
                 p0*= z0
                 p1*= z1
             if z0==0.0 and z1==0.0:
@@ -1798,8 +1798,8 @@ class varpot:
             p1= z1/(z0+z1)
             x = (p0 * math.log(p0) + p1 * math.log(p1))
             return x
-        
-                        
+
+
         
 
     def tadref(self, pot, list):
