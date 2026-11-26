@@ -1783,14 +1783,29 @@ class varpot:
         return (mat + 2**(len(sset) - 2))
 
     def tadm3(self, v):
-        if not v in self.tablas:
-            return 0
-        x = 0.0
+        mat = 0
+        d = False
+        if v in self.tablas:
+            for q in self.tablas[v]:
+                if v in q.det:
+                    piv = q
+                    d = True
+                    break
         
-        for q in self.tablas[v]:
-            x+= 1/len(q.getvars())
-        return x
-                
+        if d:
+            sset = set(piv.getvars())
+            for q in self.tablas[v]:
+                mat += 2**(len(sset.union(set(q.getvars())))) - 2**(len(q.getvars()))
+            return mat
+
+        sset = set()
+        if v in self.tablas:
+            for q in self.tablas[v]:
+                sset.update(set(q.getvars()))
+              
+
+        return (2**(len(sset)))
+        
 
 
         
