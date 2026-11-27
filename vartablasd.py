@@ -1268,7 +1268,7 @@ class varpot:
 
     def choose(self, pos):
         
-        miv = max(pos, key=lambda x: self.tadm3(x))
+        miv = max(pos, key=lambda x: self.tadm(x))
         return miv
     
 
@@ -1780,7 +1780,7 @@ class varpot:
                 sset.update(set(q.getvars()))
                 mat += - 2**(len(q.getvars()))
 
-        return (mat + 2**(len(sset) - 2))
+        return (mat + 2**(len(sset)))
 
     def tadm3(self, v):
         mat = 0
